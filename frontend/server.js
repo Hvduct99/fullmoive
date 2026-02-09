@@ -10,14 +10,16 @@ const handle = app.getRequestHandler();
 
 const port = process.env.PORT || 3000;
 
-// Database Logic (reused from backend/db.js)
-const mariadb = require('mariadb');
-const pool = mariadb.createPool({
+// Database Logic
+const mysql = require('mysql2/promise');
+const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'movie_db',
-  connectionLimit: 5
+  waitForConnections: true,
+  connectionLimit: 5,
+  queueLimit: 0
 });
 
 // API Logic helper
