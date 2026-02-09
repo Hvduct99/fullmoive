@@ -103,8 +103,23 @@ app.prepare().then(() => {
     return handle(req, res);
   });
 
-  server.listen(port, (err) => {
+  const httpServer = server.listen(port, (err) => {
     if (err) throw err;
     console.log(`> Ready on port ${port}`);
   });
+
+  // Graceful handling to prevent EADDRINUSE
+  const cleanup = () => {
+    if (httpServer) {
+        httpServer.close(() => {
+            console.log('Server closed');
+            process.exit(0);
+        });
+    } else {
+        process.exit(0);
+    }
+  };
+  
+  process.on('SIGTERM', cleanup);
+  process.on('SIGINT', cleanup);
 });
