@@ -1,6 +1,6 @@
 import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
-import { fetchMovies } from '../lib/api';
+import { getMoviesBySection } from '../lib/services';
 
 export default async function Home() {
   const [
@@ -11,12 +11,12 @@ export default async function Home() {
     animeRomanceData,
     latestData
   ] = await Promise.all([
-    fetchMovies('netflix'),
-    fetchMovies('featured'),
-    fetchMovies('theatrical'),
-    fetchMovies('section1'),
-    fetchMovies('section2'),
-    fetchMovies('latest')
+    getMoviesBySection('netflix'),
+    getMoviesBySection('featured'),
+    getMoviesBySection('theatrical'),
+    getMoviesBySection('section1'),
+    getMoviesBySection('section2'),
+    getMoviesBySection('latest')
   ]);
 
   return (
