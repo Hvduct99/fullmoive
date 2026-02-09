@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchMovieDetail } from '../../lib/api';
+import { fetchMovieDetail } from '../../../lib/api';
 
 export async function generateMetadata({ params }) {
   const movie = await fetchMovieDetail(params.slug);
