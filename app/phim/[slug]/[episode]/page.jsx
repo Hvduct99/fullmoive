@@ -2,30 +2,37 @@ import { getMovieDetail } from '../../../../lib/services';
 import MoviePlayerUI from '../../../../components/MoviePlayerUI';
 import Link from 'next/link';
 
-export async function generateMetadata({ params }) {
-  const { slug, episode } = params;
-  const movie = await getMovieDetail(slug);
-  
-  if (!movie) return { title: 'Phim không tồn tại' };
 
-  // Attempt to find episode name for title
-  // episode param is like 'tap-1'
-  let epName = episode; 
-  // Simple traversal to find match?
-  // We can leave it simple for metadata
-  
-  return {
-    title: `Xem phim ${movie.name} - ${episode} (${movie.year})`,
-    description: `Xem phim ${movie.name} ${episode} Full HD Vietsub. ${movie.content ? movie.content.substring(0, 100) : ''}...`,
-  };
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+export async function generateMetadata({ params }) {
+  try {
+    const { slug, episode } = params;
+    const movie = await getMovieDetail(slug);
+    
+    if (!movie) return { title: 'Phim không tồn tại' };
+
+    return {
+      title: `Xem phim ${movie.name} - ${episode} (${movie.year})`,
+      description: `Xem phim ${movie.name} ${episode} Full HD Vietsub. ${movie.content ? movie.content.substring(0, 100) : ''}...`,
+    };
+  } catch (e) {
+    return { title: 'Xem phim' };
+  }
 }
 
 export default async function WatchPage({ params }) {
   const { slug, episode } = params;
-  const movie = await getMovieDetail(slug);
+  let movie = null;
+  try {
+     movie = await getMovieDetail(slug);
+  } catch (e) {
+     console.error("Error fetching movie/episode:", e);
+  }
 
   if (!movie) {
-    return <div className="text-white text-center mt-20">Phim không tồn tại</div>;
+    return <div className="text-white text-center mt-20">Phim không tồn tại. Vui lòng thử lại sau.</div>;
   }
 
   // Find the episode and server
