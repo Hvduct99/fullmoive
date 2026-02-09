@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { fetchMovieDetail } from '../../../lib/api';
+import { getMovieDetail } from '../../../lib/services';
 
 export async function generateMetadata({ params }) {
-  const movie = await fetchMovieDetail(params.slug);
+  const movie = await getMovieDetail(params.slug);
   if (!movie) return { title: 'Phim không tồn tại' };
   
   return {
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function MovieDetail({ params }) {
-  const movie = await fetchMovieDetail(params.slug);
+  const movie = await getMovieDetail(params.slug);
 
   if (!movie) {
     return (
