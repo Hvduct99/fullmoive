@@ -1,7 +1,13 @@
+'use client';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useLanguage } from './LanguageContext';
 
 const MovieCard = ({ movie }) => {
+  const { lang } = useLanguage();
+  const displayName = lang === 'en' ? (movie.origin_name || movie.name) : movie.name;
+  const subName = lang === 'en' ? movie.name : (movie.origin_name || '');
+
   return (
     <Link href={`/phim/${movie.slug}`} className="group block relative overflow-hidden rounded-lg bg-surface hover:shadow-xl transition-all duration-300">
       <div className="aspect-[2/3] relative">
@@ -27,7 +33,12 @@ const MovieCard = ({ movie }) => {
       </div>
       
       <div className="p-3">
-        <h3 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{movie.name}</h3>
+        <h3 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{displayName}</h3>
+        <p className="text-xs text-gray-500 truncate">{subName}</p>
+      </div>
+    </Link>
+  );
+};
         <p className="text-xs text-gray-400 truncate">{movie.origin_name}</p>
       </div>
     </Link>
