@@ -98,7 +98,8 @@ app.prepare().then(() => {
   });
 
   // Default Next.js handler
-  server.all('*', (req, res) => {
+  // Use regex to match all routes safely for Express 4.x/5.x
+  server.all(/(.*)/, (req, res) => {
     return handle(req, res);
   });
 
