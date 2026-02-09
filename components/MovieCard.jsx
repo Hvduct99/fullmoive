@@ -18,10 +18,10 @@ const MovieCard = ({ movie }) => {
           className="object-cover group-hover:scale-110 transition-transform duration-500"
           unoptimized // Needed if domain isn't fully pre-known or configured in Next.js config perfectly
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 to-transparent opacity-60 group-hover:opacity-80 transition-opacity pointer-events-none" />
         
         {/* Play Icon Overlay on Hover */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
            <svg className="w-12 h-12 text-primary drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
              <path d="M8 5v14l11-7z"/>
            </svg>
