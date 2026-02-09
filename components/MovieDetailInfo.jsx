@@ -25,9 +25,18 @@ export default function MovieDetailInfo({ movie }) {
                priority
             />
           </div>
-          <button className="w-full bg-secondary hover:bg-red-700 text-white font-bold py-3 mt-4 rounded transition">
-            {t.watch_now}
-          </button>
+          {movie.episodes && movie.episodes.length > 0 && movie.episodes[0].server_data && movie.episodes[0].server_data.length > 0 ? (
+            <Link 
+              href={`/phim/${movie.slug}/tap-${movie.episodes[0].server_data[0].slug}`} 
+              className="block w-full text-center bg-secondary hover:bg-red-700 text-white font-bold py-3 mt-4 rounded transition"
+            >
+              {t.watch_now}
+            </Link>
+          ) : (
+            <button disabled className="w-full bg-gray-600 text-gray-400 font-bold py-3 mt-4 rounded cursor-not-allowed">
+              Coming Soon
+            </button>
+          )}
         </div>
 
         {/* Info */}
