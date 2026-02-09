@@ -1,5 +1,5 @@
-import { getMovieDetail } from '../../../lib/services';
-import MoviePlayerUI from '../../../components/MoviePlayerUI';
+import { getMovieDetail } from '../../../../lib/services';
+import MoviePlayerUI from '../../../../components/MoviePlayerUI';
 import Link from 'next/link';
 
 export async function generateMetadata({ params }) {

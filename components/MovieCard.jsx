@@ -39,10 +39,5 @@ const MovieCard = ({ movie }) => {
     </Link>
   );
 };
-        <p className="text-xs text-gray-400 truncate">{movie.origin_name}</p>
-      </div>
-    </Link>
-  );
-};
 
 export default MovieCard;
