@@ -20,7 +20,7 @@ export default async function Home() {
   ]);
 
   return (
-    <div className="min-h-screen bg-[#1a1a1a]">
+    <div className="min-h-screen bg-background">
       {/* Hero Slider - Full Width */}
       <HeroSlider movies={sliderData} />
 
