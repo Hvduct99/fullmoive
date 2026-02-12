@@ -116,7 +116,31 @@ const Header = () => {
                     <ChevronDown size={16} className="ml-1" />
                   </button>
                   <div className="absolute top-full left-0 w-[400px] bg-gray-900 border border-gray-700 shadow-2xl rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 grid grid-cols-2 gap-2">
-                    {link.items.map((genre) => (2 md:px-3 py-1 border border-transparent focus-within:border-primary transition-all">
+                    {link.items.map((genre) => (
+                      <Link 
+                        key={genre.slug} 
+                        href={`/the-loai/${genre.slug}`}
+                        className="block px-2 py-1 hover:text-primary hover:bg-gray-800 rounded transition text-sm text-gray-300"
+                      >
+                        {genre.name[lang]}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <Link key={link.href} href={link.href} className="hover:text-primary transition py-2 text-sm lg:text-base">
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
+             {/* Search */}
+            <div className="relative group" ref={searchRef}>
+              <div className="flex items-center bg-black rounded-lg px-2 md:px-3 py-1 border border-transparent focus-within:border-primary transition-all">
                 <input 
                     type="text" 
                     placeholder={t.search} 
@@ -131,31 +155,7 @@ const Header = () => {
                 {loading ? (
                   <Loader2 size={16} className="text-primary animate-spin" />
                 ) : (
-                  <Search size={16
-              </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-2 md:gap-4 shrink-0">
-             {/* Search */}
-            <div className="relative group" ref={searchRef}>
-              <div className="flex items-center bg-black rounded-lg px-3 py-1 border border-transparent focus-within:border-primary transition-all">
-                <input 
-                    type="text" 
-                    placeholder={t.search} 
-                    className="bg-transparent border-none focus:outline-none text-sm text-gray-300 w-24 md:w-64 placeholder-gray-500 py-1"
-                    value={query}
-                    onChange={(e) => {
-                      setQuery(e.target.value);
-                      setShowResults(true);
-                    }}
-                    onFocus={() => setShowResults(true)}
-                />
-                {loading ? (
-                  <Loader2 size={18} className="text-primary animate-spin" />
-                ) : (
-                  <Search size={18} className="text-gray-400 group-hover:text-white transition" />
+                  <Search size={16} className="text-gray-400 group-hover:text-white transition" />
                 )}
               </div>
 
@@ -192,7 +192,31 @@ const Header = () => {
                   ) : (
                     <div className="p-4 text-center text-gray-500 text-sm">No results found for "{query}"</div>
                   )}
-                </div>h-[90vh] overflow-y-auto">
+                </div>
+              )}
+            </div>
+
+            {/* Language Toggle */}
+            <button 
+                onClick={toggleLang}
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-xs font-bold ring-1 ring-gray-600 shrink-0"
+            >
+                {lang === 'en' ? 'EN' : 'VI'}
+            </button>
+
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="md:hidden flex items-center justify-center p-1 text-gray-300 hover:text-white"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+        </div>
+      </div>
+
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-surface border-b border-gray-800 py-4 px-4 shadow-xl h-[90vh] overflow-y-auto">
           <nav className="flex flex-col space-y-2">
             {navLinks.map((link, index) => {
               if (link.type === 'dropdown') {
@@ -232,31 +256,7 @@ const Header = () => {
                   {link.label}
                 </Link>
               )
-            }
-            {/* Mobile Menu Toggle */}
-            <button 
-              className="md:hidden flex items-center justify-center p-1 text-gray-300 hover:text-white"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-        </div>
-      </div>
-
-      {/* Mobile Navigation */}
-      {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-surface border-b border-gray-800 py-4 px-4 shadow-xl animate-fade-in-down">
-          <nav className="flex flex-col space-y-4">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.href} 
-                href={link.href} 
-                className="text-gray-300 hover:text-primary transition font-medium border-b border-gray-800 pb-2"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.label}
-              </Link>
-            ))}
+            })}
           </nav>
         </div>
       )}
