@@ -98,7 +98,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="bg-surface sticky top-0 z-50 shadow-md border-b border-gray-800">
+    <header className="bg-surface sticky top-0 z-[100] shadow-md border-b border-gray-800">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-xl md:text-2xl font-bold text-primary mr-2 md:mr-0 shrink-0">
@@ -115,7 +115,7 @@ const Header = () => {
                     {link.label}
                     <ChevronDown size={16} className="ml-1" />
                   </button>
-                  <div className="absolute top-full left-0 w-[400px] bg-gray-900 border border-gray-700 shadow-2xl rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4 grid grid-cols-2 gap-2">
+                  <div className="absolute top-full left-0 w-[400px] bg-gray-900 border border-gray-700 shadow-2xl rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] p-4 grid grid-cols-2 gap-2">
                     {link.items.map((genre) => (
                       <Link 
                         key={genre.slug} 

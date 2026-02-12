@@ -7,8 +7,8 @@ const formatMovie = (movie) => {
     if (!movie) return null;
     const poster = movie.poster_url || '';
     const thumb = movie.thumb_url || '';
-    const posterUrl = poster.startsWith('http') ? poster : `https://img.phimapi.com/${poster}`;
-    const thumbUrl = thumb.startsWith('http') ? thumb : `https://img.phimapi.com/${thumb}`;
+    const posterUrl = poster.startsWith('http') ? poster : `https://phimimg.com/${poster}`;
+    const thumbUrl = thumb.startsWith('http') ? thumb : `https://phimimg.com/${thumb}`;
     return {
         ...movie,
         poster_url: posterUrl,
