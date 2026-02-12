@@ -4,8 +4,7 @@ import { getMovieDetail } from '../../../lib/services';
 import MovieDetailInfo from '../../../components/MovieDetailInfo';
 
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export async function generateMetadata({ params }) {
   try {

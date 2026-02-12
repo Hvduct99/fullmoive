@@ -24,7 +24,7 @@ export default async function Home() {
       {/* Hero Slider - Full Width */}
       <HeroSlider movies={sliderData} />
 
-      <div className="container mx-auto px-4 space-y-12">
+      <div className="container mx-auto px-2 md:px-4 space-y-8 md:space-y-12">
         {/* Featured Section */}
         <Section title="Phim Đề Cử (Netflix)" movies={featuredData.slice(0, 12)} link="/danh-sach/netflix" />
 
