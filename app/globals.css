@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Force CSS rebuild - v1.1 */
 :root {
   --foreground-rgb: 238, 238, 238;
   --background-start-rgb: 26, 26, 26;

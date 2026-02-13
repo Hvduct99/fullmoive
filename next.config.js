@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Fix for intermittent caching/CSS issues on some hosting providers
+  generateEtags: false, 
   // output: 'standalone', // Custom Server (server.js) doesn't use standalone output usually
   images: {
     unoptimized: true, // Safe for standard Node.js hosting
