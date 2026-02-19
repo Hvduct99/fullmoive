@@ -38,7 +38,9 @@ export async function POST(request) {
         message: 'Đăng ký thành công! Vui lòng đăng nhập.', 
         success: true,
         userId: result.insertId 
-    } catch (error) {
+    }, { status: 201 });
+
+  } catch (error) {
     console.error('Registration Critical Error:', error);
     return NextResponse.json({ 
       message: 'Lỗi máy chủ (Server Error)', 
