@@ -43,7 +43,8 @@ export default function RegisterPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Registration failed');
+        // Show detailed error if available
+        throw new Error(data.error_detail ? `${data.message}: ${data.error_detail}` : (data.message || 'Đăng ký thất bại'));
       }
 
       router.push('/login?registered=true');

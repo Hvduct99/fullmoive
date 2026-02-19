@@ -38,13 +38,12 @@ export async function POST(request) {
         message: 'Đăng ký thành công! Vui lòng đăng nhập.', 
         success: true,
         userId: result.insertId 
-    }, { status: 201 });
-  } catch (error) {
-    console.error('Registration error:', error);
+    } catch (error) {
+    console.error('Registration Critical Error:', error);
     return NextResponse.json({ 
-      message: 'Internal server error', 
-      error: error.message, // Return detailed error for debugging
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      message: 'Lỗi máy chủ (Server Error)', 
+      error_detail: error.message, // Hiển thị lỗi cụ thể ra frontend để debug
+      error_code: error.code || 'UNKNOWN'
     }, { status: 500 });
   }
 }
