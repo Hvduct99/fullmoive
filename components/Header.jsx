@@ -294,25 +294,26 @@ const Header = ({ session }) => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-3">
+              // Auth Buttons: Visible on all screens
+              <div className="flex items-center gap-2 md:gap-3">
                 <Link 
                   href="/login"
-                  className="text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap"
+                  className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-2 py-1 rounded hover:bg-white/10"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   href="/register"
-                  className="text-sm font-medium bg-yellow-500 text-black px-4 py-1.5 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap"
+                  className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-3 py-1.5 md:px-4 md:py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap"
                 >
                   Đăng ký
                 </Link>
               </div>
             )}
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle - Only show if necessary for nav links, but auth is now always visible */}
             <button 
-              className="md:hidden flex items-center justify-center p-1 text-gray-300 hover:text-white"
+              className="md:hidden flex items-center justify-center p-1 text-gray-300 hover:text-white ml-1"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -364,8 +365,8 @@ const Header = ({ session }) => {
               )
             })}
             
-            {/* Mobile Auth Links */}
-            <div className="border-t border-gray-800 pt-4 mt-2">
+            {/* Mobile Auth Links - Redundant if buttons are always visible, but keep for menu completeness */}
+            <div className="border-t border-gray-800 pt-4 mt-2 md:hidden">
               {userSession ? (
                 <>
                   <div className="flex items-center gap-3 px-4 py-2">
