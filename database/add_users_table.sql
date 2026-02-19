@@ -1,6 +1,14 @@
 
--- Users table for authentication
-CREATE TABLE IF NOT EXISTS users (
+-- !!! CHẠY TOÀN BỘ ĐOẠN CODE NÀY TRONG PHPMYADMIN (TAB SQL) !!!
+
+-- 1. Tắt chế độ kiểm tra khóa ngoại để cho phép xóa bảng users cũ đang bị ràng buộc
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- 2. Xóa bảng users cũ (nếu tồn tại)
+DROP TABLE IF EXISTS users;
+
+-- 3. Tạo lại bảng users chuẩn chỉnh
+CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
@@ -11,6 +19,11 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 4. Bật lại chế độ kiểm tra khóa ngoại (An toàn)
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- !!! SAU KHI CHẠY XONG, HÃY THỬ ĐĂNG KÝ LẠI TRÊN WEB !!!
 
 -- Insert default admin user (password: admin123)
 -- You should change this password immediately after login
