@@ -11,6 +11,11 @@ const nextConfig = {
       { protocol: 'http', hostname: 'img.phimapi.com' },
     ],
   },
+  // Reduce memory usage during build/runtime
+  experimental: {
+    workerThreads: false,
+    cpus: 1,
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
