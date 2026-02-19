@@ -17,6 +17,8 @@ const formatMovie = (movie) => {
     };
 };
 
+export const dynamic = 'force-dynamic'; // Force dynamic rendering to fetch fresh data
+
 export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const section = searchParams.get('section') || 'latest';

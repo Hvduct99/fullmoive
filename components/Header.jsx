@@ -14,10 +14,36 @@ const Header = () => {
   const [showResults, setShowResults] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isGenreOpen, setIsGenreOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const searchRef = useRef(null);
+  const userMenuRef = useRef(null);
   const router = useRouter();
 
-  // Defined Genres
+  // User session state
+  const [userSession, setUserSession] = useState(session);
+
+  useEffect(() => {
+    // Check session on mount if not provided or to update
+    if (!session) {
+      fetch('/api/auth/session')
+        .then(res => res.json())
+        .then(data => setUserSession(data.user))
+        .catch(() => setUserSession(null));
+    } else {
+        setUserSession(session);
+    }
+      
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowResults(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   const genres = [
     { slug: 'hanh-dong', name: { vi: 'Hành Động', en: 'Action' } },
     { slug: 'tinh-cam', name: { vi: 'Tình Cảm', en: 'Romance' } },
@@ -204,6 +230,83 @@ const Header = () => {
                 {lang === 'en' ? 'EN' : 'VI'}
             </button>
 
+            {/* Auth Buttons / User Menu */}
+            {userSession ? (
+              <div className="relative" ref={userMenuRef}>
+                <button 
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 hover:bg-[#1a1a1a] py-1 px-2 rounded-full transition-colors"
+                >
+                  <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold">
+                    {userSession.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={userSession.avatar} alt="User" className="w-full h-full rounded-full object-cover" />
+                    ) : 'U'}
+                  </div>
+                  <ChevronDown size={14} className="text-gray-400" />
+                </button>
+
+                {isUserMenuOpen && (
+                  <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl py-1 z-50">
+                    <div className="px-4 py-2 border-b border-[#333]">
+                      <p className="text-sm font-medium text-white">Tài khoản</p>
+                      <p className="text-xs text-gray-400 truncate">Member</p>
+                    </div>
+                    
+                    {(userSession.role === 'admin' || userSession.role === 'moderator') && (
+                      <Link 
+                        href="/admin" 
+                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        Trang quản trị (Admin)
+                      </Link>
+                    )}
+                    
+                    <Link 
+                      href="/user/dashboard" 
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Dashboard
+                    </Link>
+                    
+                    <Link 
+                      href="/user/profile" 
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Hồ sơ cá nhân
+                    </Link>
+
+                    <form action="/api/auth/logout" method="POST">
+                      <button 
+                        type="submit"
+                        className="w-full text-left block px-4 py-2 text-sm text-red-400 hover:bg-[#333]"
+                      >
+                        Đăng xuất
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="hidden md:flex items-center gap-3">
+                <Link 
+                  href="/login"
+                  className="text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap"
+                >
+                  Đăng nhập
+                </Link>
+                <Link
+                  href="/register"
+                  className="text-sm font-medium bg-yellow-500 text-black px-4 py-1.5 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
+
             {/* Mobile Menu Toggle */}
             <button 
               className="md:hidden flex items-center justify-center p-1 text-gray-300 hover:text-white"
@@ -257,6 +360,67 @@ const Header = () => {
                 </Link>
               )
             })}
+            
+            {/* Mobile Auth Links */}
+            <div className="border-t border-gray-800 pt-4 mt-2">
+              {userSession ? (
+                <>
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold">
+                       {userSession.avatar ? (
+                         // eslint-disable-next-line @next/next/no-img-element
+                         <img src={userSession.avatar} alt="User" className="w-full h-full rounded-full object-cover" />
+                       ) : 'U'}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">Tài khoản</p>
+                      <p className="text-xs text-gray-400">Member</p>
+                    </div>
+                  </div>
+                  
+                  <Link 
+                    href="/user/dashboard"
+                    className="block px-4 py-2 text-gray-300 hover:text-white"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+
+                  {(userSession.role === 'admin' || userSession.role === 'moderator') && (
+                      <Link 
+                        href="/admin" 
+                        className="block px-4 py-2 text-gray-300 hover:text-white"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Trang Admin
+                      </Link>
+                  )}
+
+                  <form action="/api/auth/logout" method="POST">
+                    <button className="block w-full text-left px-4 py-2 text-red-500 hover:text-red-400">
+                      Đăng xuất
+                    </button>
+                  </form>
+                </>
+              ) : (
+                <div className="px-4 py-2 flex flex-col gap-3">
+                  <Link 
+                    href="/login"
+                    className="block w-full text-center py-2 rounded bg-[#333] text-white hover:bg-[#444]"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link 
+                    href="/register"
+                    className="block w-full text-center py-2 rounded bg-yellow-500 text-black font-bold hover:bg-yellow-400"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Đăng ký
+                  </Link>
+                </div>
+              )}
+            </div>
           </nav>
         </div>
       )}
