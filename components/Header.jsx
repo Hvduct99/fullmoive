@@ -18,24 +18,16 @@ const Header = ({ session }) => {
   const searchRef = useRef(null);
   const userMenuRef = useRef(null);
   const router = useRouter();
+  
+  // Use session directly from prop if available, or just use null to show login/register
+  // Assuming if session is undefined, we are not logged in. 
+  // We want to force Buttons to show if not logged in.
+  const userSession = session?.user;
 
-  // User session state - initialize with prop if available
-  const [userSession, setUserSession] = useState(session?.user || null);
-
+  // We don't need client-side fetch for session if we passed it from RootLayout
+  // This simplifies things and avoids hydration mismatches
+  
   useEffect(() => {
-    // If no session prop provided, try fetching client-side
-    if (!session) {
-      fetch('/api/auth/session')
-        .then(res => res.json())
-        .then(data => {
-            if (data.user) setUserSession(data.user);
-        })
-        .catch(() => setUserSession(null));
-    } else {
-        // Update if prop changes
-        setUserSession(session.user);
-    }
-      
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowResults(false);
