@@ -1,10 +1,25 @@
+
 import MovieCard from '../../../components/MovieCard';
 import Pagination from '../../../components/Pagination';
 import { getMoviesByGenre } from '../../../lib/services';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 60; // Fetch fresh data every minute
-// ...existing code...
+
+export async function generateMetadata({ params }) {
+  const { slug } = params;
+  // Simple capitalization for title
+  const title = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+  return {
+    title: `Phim ${title} - Xem Phim ${title} mới nhất`,
+    description: `Danh sách phim ${title} hay nhất, cập nhật liên tục.`,
+  };
+}
+
+export default async function GenrePage({ params, searchParams }) {
+  const page = searchParams?.page ? parseInt(searchParams.page) : 1;
+  const { movies, title, pagination } = await getMoviesByGenre(params.slug, page);
+
   if (!movies || movies.length === 0) {
       if(page === 1) return notFound(); // Only 404 on first page empty
   }

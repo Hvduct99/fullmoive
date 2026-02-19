@@ -1,10 +1,24 @@
+
 import MovieCard from '../../../components/MovieCard';
 import Pagination from '../../../components/Pagination';
 import { getMoviesByList } from '../../../lib/services';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 60; // Fetch fresh data every minute
-// ...existing code...
+
+export async function generateMetadata({ params }) {
+  const { slug } = params;
+  const title = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+  return {
+    title: `Danh sách ${title} - Xem Phim tốt nhất`,
+    description: `Danh sách phim ${title} cập nhật mới nhất.`,
+  };
+}
+
+export default async function ListPage({ params, searchParams }) {
+  const page = searchParams?.page ? parseInt(searchParams.page) : 1;
+  const { movies, title, pagination } = await getMoviesByList(params.slug, page);
+
   if (!movies || movies.length === 0) {
      if(page === 1 && params.slug !== 'netflix') return notFound(); // Netflix logic handles empty differently sometimes
   }
