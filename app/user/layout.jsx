@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { getSession } from '../../lib/session';
+import { getSession } from '@/lib/session';
 import { redirect } from 'next/navigation';
 import { 
   User, 

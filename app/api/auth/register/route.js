@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import pool from '../../../../../lib/db';
-import { hashPassword } from '../../../../../lib/password';
+import pool from '@/lib/db';
+import { hashPassword } from '@/lib/password';
 
 export async function POST(request) {
   try {

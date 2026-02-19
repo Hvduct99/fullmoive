@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { deleteSession } from '../../../../../lib/session';
+import { deleteSession } from '@/lib/session';
 
 export async function POST(request) {
   deleteSession();

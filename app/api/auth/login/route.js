@@ -1,8 +1,8 @@
 
 import { NextResponse } from 'next/server';
-import pool from '../../../../../lib/db';
-import { verifyPassword } from '../../../../../lib/password';
-import { createSession } from '../../../../../lib/session';
+import pool from '@/lib/db';
+import { verifyPassword } from '@/lib/password';
+import { createSession } from '@/lib/session';
 
 export async function POST(request) {
   try {

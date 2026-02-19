@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
-import pool from '../../../../../lib/db';
-import { getSession } from '../../../../../lib/session';
+import pool from '@/lib/db';
+import { getSession } from '@/lib/session';
 
 export async function GET() {
   const session = await getSession();
