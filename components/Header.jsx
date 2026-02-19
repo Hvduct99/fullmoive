@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from './LanguageContext';
 import { useRouter } from 'next/navigation';
 
-const Header = () => {
+const Header = ({ session }) => {
   const { lang, toggleLang, t } = useLanguage();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
@@ -19,15 +19,22 @@ const Header = () => {
   const userMenuRef = useRef(null);
   const router = useRouter();
 
-  // User session state
-  const [userSession, setUserSession] = useState(null);
+  // User session state - initialize with prop if available
+  const [userSession, setUserSession] = useState(session?.user || null);
 
   useEffect(() => {
-    // Check session on mount if not provided or to update
-    fetch('/api/auth/session')
-      .then(res => res.json())
-      .then(data => setUserSession(data.user))
-      .catch(() => setUserSession(null));
+    // If no session prop provided, try fetching client-side
+    if (!session) {
+      fetch('/api/auth/session')
+        .then(res => res.json())
+        .then(data => {
+            if (data.user) setUserSession(data.user);
+        })
+        .catch(() => setUserSession(null));
+    } else {
+        // Update if prop changes
+        setUserSession(session.user);
+    }
       
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -287,7 +294,7 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              <div className="hidden md:flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <Link 
                   href="/login"
                   className="text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap"
