@@ -2,7 +2,7 @@ import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
 import { getMoviesBySection } from '../lib/services';
 
-export const revalidate = 60; // Revalidate every 60 seconds
+export const revalidate = 0; // Disable static cache (Real-time updates)
 
 export default async function Home() {
   // Fetch data sequentially to avoid OOM or timeout issues during build/runtime
