@@ -287,7 +287,7 @@ const Header = ({ session }) => {
               </div>
             ) : (
               // Auth Buttons: Visible on all screens
-              <div className="flex items-center gap-2 md:gap-3">
+              <div className="flex items-center gap-2 md:gap-3 z-[100]">
                 <Link 
                   href="/login"
                   className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-3 py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20"
