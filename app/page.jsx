@@ -5,21 +5,18 @@ import { getMoviesBySection } from '../lib/services';
 export const revalidate = 60; // Revalidate every 60 seconds
 
 export default async function Home() {
-  const [
-    featuredData, 
-    sliderData,
-    theatricalData,
-    actionHorrorData,
-    animeRomanceData,
-    latestData
-  ] = await Promise.all([
-    getMoviesBySection('netflix'),
-    getMoviesBySection('featured'),
-    getMoviesBySection('theatrical'),
-    getMoviesBySection('section1'),
-    getMoviesBySection('section2'),
-    getMoviesBySection('latest')
-  ]);
+  // Fetch data sequentially to avoid OOM or timeout issues during build/runtime
+  // Group 1: Hero Slider & Featured
+  const sliderData = await getMoviesBySection('featured');
+  const featuredData = await getMoviesBySection('netflix');
+
+  // Group 2: Theatrical & Latest
+  const theatricalData = await getMoviesBySection('theatrical');
+  const latestData = await getMoviesBySection('latest');
+
+  // Group 3: Categories
+  const actionHorrorData = await getMoviesBySection('section1');
+  const animeRomanceData = await getMoviesBySection('section2');
 
   return (
     <div className="min-h-screen bg-background">
