@@ -63,7 +63,7 @@ export default function HeroSlider({ movies }) {
                         </p>
                     )}
                     
-                    <div className="pt-4">
+                    <div className="pt-4 flex flex-wrap gap-4">
                         <Link 
                         href={`/phim/${movie.slug}`} 
                         className="inline-flex items-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-red-600/30"
@@ -72,6 +72,16 @@ export default function HeroSlider({ movies }) {
                                 <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
                             </svg>
                             {t.watch_now}
+                        </Link>
+                        
+                        <Link 
+                        href={`/phim/${movie.slug}`} 
+                        className="inline-flex items-center gap-2 px-8 py-3 bg-gray-600/80 hover:bg-gray-500/80 text-white font-bold rounded-full transition-all transform hover:scale-105 backdrop-blur-sm"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zM12.75 8.25c-.068-.008-.137-.015-.206-.015H11.25v1.5h1.294c.068 0 .138-.008.206-.015V8.25z" />
+                            </svg>
+                            {lang === 'vi' ? 'Chi tiết' : 'Details'}
                         </Link>
                     </div>
                  </div>

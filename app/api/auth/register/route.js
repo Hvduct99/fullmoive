@@ -24,13 +24,21 @@ export async function POST(request) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Insert user
+    // Insert user with default role 'user'
     const [result] = await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-      [username, email, hashedPassword]
+      'INSERT INTO users (username, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?)',
+      [username, email, hashedPassword, 'user', 'active']
     );
 
-    return NextResponse.json({ message: 'User created successfully', userId: result.insertId }, { status: 201 });
+    // In a real app, you might want to send a verification email here.
+    // Also, consider logging this event securely.
+
+    // Return success response with redirect hint if needed, though frontend handles routing
+    return NextResponse.json({ 
+        message: 'Đăng ký thành công! Vui lòng đăng nhập.', 
+        success: true,
+        userId: result.insertId 
+    }, { status: 201 });
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json({ 

@@ -290,13 +290,13 @@ const Header = ({ session }) => {
               <div className="flex items-center gap-2 md:gap-3">
                 <Link 
                   href="/login"
-                  className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-2 py-1 rounded hover:bg-white/10"
+                  className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-3 py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   href="/register"
-                  className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-3 py-1.5 md:px-4 md:py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap"
+                  className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap shadow-md hover:shadow-lg active:scale-95 transform"
                 >
                   Đăng ký
                 </Link>
