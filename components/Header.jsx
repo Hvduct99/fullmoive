@@ -19,10 +19,8 @@ const Header = ({ session }) => {
   const userMenuRef = useRef(null);
   const router = useRouter();
   
-  // Use session directly from prop if available, or just use null to show login/register
-  // Assuming if session is undefined, we are not logged in. 
-  // We want to force Buttons to show if not logged in.
-  const userSession = session?.user;
+  // Adjusted: session from getSession() is the payload itself { userId, role }, not { user: ... }
+  const userSession = session;
 
   // We don't need client-side fetch for session if we passed it from RootLayout
   // This simplifies things and avoids hydration mismatches
