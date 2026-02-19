@@ -20,18 +20,14 @@ const Header = () => {
   const router = useRouter();
 
   // User session state
-  const [userSession, setUserSession] = useState(session);
+  const [userSession, setUserSession] = useState(null);
 
   useEffect(() => {
     // Check session on mount if not provided or to update
-    if (!session) {
-      fetch('/api/auth/session')
-        .then(res => res.json())
-        .then(data => setUserSession(data.user))
-        .catch(() => setUserSession(null));
-    } else {
-        setUserSession(session);
-    }
+    fetch('/api/auth/session')
+      .then(res => res.json())
+      .then(data => setUserSession(data.user))
+      .catch(() => setUserSession(null));
       
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -119,7 +115,7 @@ const Header = () => {
     { label: lang === 'vi' ? 'Thể Loại' : 'Genres', type: 'dropdown', items: genres },
     { href: '/danh-sach/phim-le', label: lang === 'vi' ? 'Phim Lẻ' : 'Movies', type: 'link' },
     { href: '/danh-sach/phim-bo', label: lang === 'vi' ? 'Phim Bộ' : 'Series', type: 'link' },
-    { href: '/the-loai/hoat-hinh', label: lang === 'vi' ? 'Hoạt Hình' : 'Anime', type: 'link' },
+    { href: '/danh-sach/hoat-hinh', label: lang === 'vi' ? 'Hoạt Hình' : 'Anime', type: 'link' },
     { href: '/danh-sach/phim-chieu-rap', label: t.theatrical, type: 'link' },
   ];
 

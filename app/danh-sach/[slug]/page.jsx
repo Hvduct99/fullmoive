@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { getMoviesByList } from '../../../lib/services';
 import { notFound } from 'next/navigation';
 
-export const revalidate = 3600;
+export const revalidate = 60; // Fetch fresh data every minute
 
 export async function generateMetadata({ params }) {
   const { slug } = params;

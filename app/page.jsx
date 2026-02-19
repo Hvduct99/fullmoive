@@ -2,6 +2,8 @@ import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
 import { getMoviesBySection } from '../lib/services';
 
+export const revalidate = 60; // Revalidate every 60 seconds
+
 export default async function Home() {
   const [
     featuredData, 
