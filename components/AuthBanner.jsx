@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 
 const AuthBanner = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true); // default true to avoid flash
+  const [isLoggedIn, setIsLoggedIn] = useState(false); // default false = show banner immediately for guests
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     const check = async () => {
@@ -13,12 +14,15 @@ const AuthBanner = () => {
         setIsLoggedIn(!!data.user);
       } catch {
         setIsLoggedIn(false);
+      } finally {
+        setChecked(true);
       }
     };
     check();
   }, []);
 
-  if (isLoggedIn) return null;
+  // Hide if logged in (after check confirms)
+  if (checked && isLoggedIn) return null;
 
   return (
     <>
@@ -63,7 +67,8 @@ const AuthBanner = () => {
 
 // Bottom CTA - large section at the end of the page
 export const AuthBottomCTA = () => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     const check = async () => {
@@ -73,12 +78,14 @@ export const AuthBottomCTA = () => {
         setIsLoggedIn(!!data.user);
       } catch {
         setIsLoggedIn(false);
+      } finally {
+        setChecked(true);
       }
     };
     check();
   }, []);
 
-  if (isLoggedIn) return null;
+  if (checked && isLoggedIn) return null;
 
   return (
     <div className="relative z-10 mt-12 mb-8">

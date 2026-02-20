@@ -2,7 +2,6 @@ import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { LanguageProvider } from '../components/LanguageContext';
-import { getSession } from '@/lib/session';
 
 export const metadata = {
   title: 'GenzMovie - Xem Phim Online',
@@ -15,14 +14,12 @@ export const metadata = {
   },
 };
 
-export default async function RootLayout({ children }) {
-  const session = await getSession();
-
+export default function RootLayout({ children }) {
   return (
     <html lang="vi">
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
-          <Header session={session} />
+          <Header />
           <main className="min-h-screen">
             {children}
           </main>
