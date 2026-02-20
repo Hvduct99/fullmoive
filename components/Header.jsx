@@ -124,10 +124,90 @@ const Header = ({ session }) => {
   return (
     <header className="bg-surface sticky top-0 z-[100] shadow-md border-b border-gray-800">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="text-xl md:text-2xl font-bold text-primary mr-2 md:mr-0 shrink-0">
-          Genz<span className="text-white">Movie</span>
-        </Link>
+        {/* Left side: Logo + Auth Buttons */}
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 shrink-0">
+          {/* Logo */}
+          <Link href="/" className="text-xl md:text-2xl font-bold text-primary shrink-0">
+            Genz<span className="text-white">Movie</span>
+          </Link>
+
+          {/* Auth Buttons / User Menu - TOP LEFT */}
+          {userSession ? (
+            <div className="relative" ref={userMenuRef}>
+              <button 
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-1.5 hover:bg-[#1a1a1a] py-1 px-2 rounded-full transition-colors"
+              >
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold text-xs md:text-sm">
+                  {userSession.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={userSession.avatar} alt="User" className="w-full h-full rounded-full object-cover" />
+                  ) : 'U'}
+                </div>
+                <ChevronDown size={14} className="text-gray-400 hidden sm:block" />
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="absolute top-full left-0 mt-2 w-48 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl py-1 z-50">
+                  <div className="px-4 py-2 border-b border-[#333]">
+                    <p className="text-sm font-medium text-white">Tài khoản</p>
+                    <p className="text-xs text-gray-400 truncate">Member</p>
+                  </div>
+                  
+                  {(userSession.role === 'admin' || userSession.role === 'moderator') && (
+                    <Link 
+                      href="/admin" 
+                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    >
+                      Trang quản trị (Admin)
+                    </Link>
+                  )}
+                  
+                  <Link 
+                    href="/user/dashboard" 
+                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  
+                  <Link 
+                    href="/user/profile" 
+                    className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    Hồ sơ cá nhân
+                  </Link>
+
+                  <form action="/api/auth/logout" method="POST">
+                    <button 
+                      type="submit"
+                      className="w-full text-left block px-4 py-2 text-sm text-red-400 hover:bg-[#333]"
+                    >
+                      Đăng xuất
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 sm:gap-2 md:gap-3 z-[100]">
+              <Link 
+                href="/login"
+                className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-1.5 sm:px-2 md:px-3 py-1 md:py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                href="/register"
+                className="text-[11px] sm:text-xs md:text-sm font-bold bg-yellow-500 text-black px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap shadow-md hover:shadow-lg active:scale-95 transform"
+              >
+                Đăng ký
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-4 lg:space-x-6 items-center">
@@ -228,85 +308,7 @@ const Header = ({ session }) => {
                 {lang === 'en' ? 'EN' : 'VI'}
             </button>
 
-            {/* Auth Buttons / User Menu */}
-            {userSession ? (
-              <div className="relative" ref={userMenuRef}>
-                <button 
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 hover:bg-[#1a1a1a] py-1 px-2 rounded-full transition-colors"
-                >
-                  <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold">
-                    {userSession.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={userSession.avatar} alt="User" className="w-full h-full rounded-full object-cover" />
-                    ) : 'U'}
-                  </div>
-                  <ChevronDown size={14} className="text-gray-400" />
-                </button>
-
-                {isUserMenuOpen && (
-                  <div className="absolute top-full right-0 mt-2 w-48 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl py-1 z-50">
-                    <div className="px-4 py-2 border-b border-[#333]">
-                      <p className="text-sm font-medium text-white">Tài khoản</p>
-                      <p className="text-xs text-gray-400 truncate">Member</p>
-                    </div>
-                    
-                    {(userSession.role === 'admin' || userSession.role === 'moderator') && (
-                      <Link 
-                        href="/admin" 
-                        className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
-                        onClick={() => setIsUserMenuOpen(false)}
-                      >
-                        Trang quản trị (Admin)
-                      </Link>
-                    )}
-                    
-                    <Link 
-                      href="/user/dashboard" 
-                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Dashboard
-                    </Link>
-                    
-                    <Link 
-                      href="/user/profile" 
-                      className="block px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      Hồ sơ cá nhân
-                    </Link>
-
-                    <form action="/api/auth/logout" method="POST">
-                      <button 
-                        type="submit"
-                        className="w-full text-left block px-4 py-2 text-sm text-red-400 hover:bg-[#333]"
-                      >
-                        Đăng xuất
-                      </button>
-                    </form>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // Auth Buttons: Visible on all screens
-              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 z-[100]">
-                <Link 
-                  href="/login"
-                  className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-1.5 sm:px-2 md:px-3 py-1 md:py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20"
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  href="/register"
-                  className="text-[11px] sm:text-xs md:text-sm font-bold bg-yellow-500 text-black px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap shadow-md hover:shadow-lg active:scale-95 transform"
-                >
-                  Đăng ký
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile Menu Toggle - Only show if necessary for nav links, but auth is now always visible */}
+            {/* Mobile Menu Toggle */}
             <button 
               className="md:hidden flex items-center justify-center p-1 text-gray-300 hover:text-white ml-1"
               onClick={() => setIsMenuOpen(!isMenuOpen)}

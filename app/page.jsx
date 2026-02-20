@@ -2,7 +2,7 @@ import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
 import { getMoviesBySection } from '../lib/services';
 
-export const revalidate = 3600; // Enable ISR cache (Update every 1 hour) to fix 503 timeout
+export const revalidate = 1800; // ISR cache - refresh every 30 minutes for fresher content
 
 export default async function Home() {
   // Fetch data sequentially to avoid OOM or timeout issues during build/runtime
