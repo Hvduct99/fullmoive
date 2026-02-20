@@ -8,8 +8,8 @@ const MovieMarquee = ({ movies, title }) => {
   
   if (!movies || movies.length === 0) return null;
 
-  // Double the movies array for seamless infinite scroll
-  const duplicated = [...movies, ...movies];
+  // Triple the movies array for seamless infinite scroll with more content
+  const duplicated = [...movies, ...movies, ...movies];
 
   return (
     <section className="py-6 md:py-8 overflow-hidden bg-gradient-to-r from-[#1a1a1a] via-[#111] to-[#1a1a1a]">
@@ -26,14 +26,14 @@ const MovieMarquee = ({ movies, title }) => {
         <div className="absolute left-0 top-0 bottom-0 w-12 md:w-20 bg-gradient-to-r from-[#111] to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-12 md:w-20 bg-gradient-to-l from-[#111] to-transparent z-10 pointer-events-none" />
         
-        <div className="flex animate-marquee gap-4 md:gap-6 w-max hover:[animation-play-state:paused]">
+        <div className="flex animate-marquee gap-3 md:gap-4 w-max hover:[animation-play-state:paused]">
           {duplicated.map((movie, index) => {
             const displayName = lang === 'en' ? (movie.origin_name || movie.name) : movie.name;
             return (
               <Link
                 key={`${movie.slug}-${index}`}
                 href={`/phim/${movie.slug}`}
-                className="group flex-shrink-0 w-[160px] sm:w-[180px] md:w-[200px] relative rounded-xl overflow-hidden bg-surface hover:ring-2 hover:ring-red-500 transition-all duration-300 shadow-lg hover:shadow-red-500/20"
+                className="group flex-shrink-0 w-[130px] sm:w-[150px] md:w-[170px] relative rounded-xl overflow-hidden bg-surface hover:ring-2 hover:ring-red-500 transition-all duration-300 shadow-lg hover:shadow-red-500/20"
               >
                 <div className="aspect-[2/3] relative">
                   <Image

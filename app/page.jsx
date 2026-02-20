@@ -20,8 +20,8 @@ export default async function Home() {
   const actionHorrorData = await getMoviesBySection('section1');
   const animeRomanceData = await getMoviesBySection('section2');
 
-  // Marquee: pick 7 sci-fi/horror movies from slider data (already fetched)
-  const marqueeMovies = sliderData ? sliderData.slice(0, 7) : [];
+  // Marquee: dedicated fetch for more sci-fi & horror movies
+  const marqueeMovies = await getMoviesBySection('marquee');
 
   return (
     <div className="min-h-screen bg-background">
