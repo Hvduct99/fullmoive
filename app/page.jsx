@@ -1,15 +1,12 @@
 import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
 import MovieMarquee from '../components/MovieMarquee';
-import AuthBanner from '../components/AuthBanner';
+import AuthBanner, { AuthBottomCTA } from '../components/AuthBanner';
 import { getMoviesBySection } from '../lib/services';
-import { getSession } from '@/lib/session';
 
 export const revalidate = 1800; // ISR cache - refresh every 30 minutes for fresher content
 
 export default async function Home() {
-  const session = await getSession();
-
   // Fetch data sequentially to avoid OOM or timeout issues during build/runtime
   // Group 1: Hero Slider & Featured
   const sliderData = await getMoviesBySection('featured');
@@ -31,8 +28,8 @@ export default async function Home() {
       {/* Hero Slider - Full Width */}
       <HeroSlider movies={sliderData} />
 
-      {/* Auth Banner - shows below hero for guests, always visible */}
-      <AuthBanner session={session} />
+      {/* Auth Banner - shows below hero for guests (client-side session check) */}
+      <AuthBanner />
 
       {/* Marquee - Sci-Fi & Horror scrolling */}
       <MovieMarquee movies={marqueeMovies} title="Kinh Dị & Khoa Học Viễn Tưởng Hot" />
@@ -49,6 +46,9 @@ export default async function Home() {
         
         <Section title="Hoạt Hình & Tình Cảm" movies={animeRomanceData.slice(0, 12)} link="/the-loai/hoat-hinh" />
       </div>
+
+      {/* Bottom CTA - large auth section at the end for guests */}
+      <AuthBottomCTA />
     </div>
   );
 }
