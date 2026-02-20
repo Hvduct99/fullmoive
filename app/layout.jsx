@@ -5,9 +5,14 @@ import { LanguageProvider } from '../components/LanguageContext';
 import { getSession } from '@/lib/session';
 
 export const metadata = {
-  title: 'PhimXomClone - Xem Phim Online',
-  description: 'Website xem phim online chất lượng cao, cập nhật nhanh nhất.',
+  title: 'GenzMovie - Xem Phim Online',
+  description: 'GenzMovie - Website xem phim online chất lượng cao, cập nhật nhanh nhất.',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export default async function RootLayout({ children }) {
