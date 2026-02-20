@@ -19,12 +19,27 @@ const Header = ({ session }) => {
   const userMenuRef = useRef(null);
   const router = useRouter();
   
-  // Adjusted: session from getSession() is the payload itself { userId, role }, not { user: ... }
-  const userSession = session;
+  // Session state: use server prop as initial, then verify client-side to fix ISR cache mismatch
+  const [userSession, setUserSession] = useState(session);
 
-  // We don't need client-side fetch for session if we passed it from RootLayout
-  // This simplifies things and avoids hydration mismatches
-  
+  // Client-side session check — ensures correct auth state even if ISR cached a stale layout
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/session');
+        const data = await res.json();
+        if (data.user) {
+          setUserSession({ userId: data.user.id, role: data.user.role });
+        } else {
+          setUserSession(null);
+        }
+      } catch (err) {
+        // On error, keep initial server session
+      }
+    };
+    checkSession();
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
@@ -59,16 +74,6 @@ const Header = ({ session }) => {
     { slug: 'bi-an', name: { vi: 'Bí Ẩn', en: 'Mystery' } },
     { slug: 'hoc-duong', name: { vi: 'Học Đường', en: 'School' } },
   ];
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
-        setShowResults(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -156,14 +161,14 @@ const Header = ({ session }) => {
           })}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-4 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 md:gap-4 shrink-0">
              {/* Search */}
             <div className="relative group" ref={searchRef}>
               <div className="flex items-center bg-black rounded-lg px-2 md:px-3 py-1 border border-transparent focus-within:border-primary transition-all">
                 <input 
                     type="text" 
                     placeholder={t.search} 
-                    className="bg-transparent border-none focus:outline-none text-sm text-gray-300 w-24 md:w-48 lg:w-64 placeholder-gray-500 py-1"
+                    className="bg-transparent border-none focus:outline-none text-sm text-gray-300 w-20 sm:w-24 md:w-48 lg:w-64 placeholder-gray-500 py-1"
                     value={query}
                     onChange={(e) => {
                       setQuery(e.target.value);
@@ -285,16 +290,16 @@ const Header = ({ session }) => {
               </div>
             ) : (
               // Auth Buttons: Visible on all screens
-              <div className="flex items-center gap-2 md:gap-3 z-[100]">
+              <div className="flex items-center gap-1 sm:gap-2 md:gap-3 z-[100]">
                 <Link 
                   href="/login"
-                  className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-3 py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20"
+                  className="text-[11px] sm:text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors whitespace-nowrap px-1.5 sm:px-2 md:px-3 py-1 md:py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   href="/register"
-                  className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-4 py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap shadow-md hover:shadow-lg active:scale-95 transform"
+                  className="text-[11px] sm:text-xs md:text-sm font-bold bg-yellow-500 text-black px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 rounded-full hover:bg-yellow-400 transition-colors whitespace-nowrap shadow-md hover:shadow-lg active:scale-95 transform"
                 >
                   Đăng ký
                 </Link>
