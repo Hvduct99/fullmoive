@@ -41,13 +41,13 @@ export default async function Home() {
         {/* Featured Section */}
         <Section title="Phim Đề Cử (Netflix)" movies={featuredData.slice(0, 12)} link="/danh-sach/netflix" />
 
-        <Section title="Phim Chiếu Rạp" movies={theatricalData} link="/danh-sach/phim-chieu-rap" />
+        <Section title="Phim Chiếu Rạp" movies={theatricalData.slice(0, 12)} link="/danh-sach/phim-chieu-rap" />
         
         <Section title="Phim Mới Cập Nhật" movies={latestData.slice(0, 12)} link="/danh-sach/phim-moi" />
         
-        <Section title="Hành Động & Kinh Dị" movies={actionHorrorData} link="/the-loai/hanh-dong" />
+        <Section title="Hành Động & Kinh Dị" movies={actionHorrorData.slice(0, 12)} link="/the-loai/hanh-dong" />
         
-        <Section title="Hoạt Hình & Tình Cảm" movies={animeRomanceData} link="/the-loai/hoat-hinh" />
+        <Section title="Hoạt Hình & Tình Cảm" movies={animeRomanceData.slice(0, 12)} link="/the-loai/hoat-hinh" />
       </div>
     </div>
   );

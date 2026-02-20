@@ -2,7 +2,7 @@
 const nextConfig = {
   // Fix for intermittent caching/CSS issues on some hosting providers
   generateEtags: false, 
-  // output: 'standalone', // Custom Server (server.js) doesn't use standalone output usually
+  output: 'standalone', // Smaller deployment footprint, saves RAM on Hostinger
   images: {
     unoptimized: true, // Safe for standard Node.js hosting
     remotePatterns: [
