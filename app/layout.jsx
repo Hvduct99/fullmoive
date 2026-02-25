@@ -2,12 +2,14 @@ import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { LanguageProvider } from '../components/LanguageContext';
-import ServiceWorkerRegister from '../components/ServiceWorkerRegister';
 
 export const metadata = {
   title: 'GenzMovie - Xem Phim Online',
   description: 'GenzMovie - Website xem phim online chất lượng cao, cập nhật nhanh nhất.',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
+  other: {
+    monetag: 'c9caea7a220c0f803bb1cab802b08f0f',
+  },
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
@@ -18,8 +20,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
-      <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
-        <LanguageProvider>
+      <bodynguageProvider>
           <ServiceWorkerRegister />
           <Header />
           <main className="min-h-screen">
