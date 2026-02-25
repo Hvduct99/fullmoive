@@ -20,8 +20,8 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
-      <bodynguageProvider>
-          <ServiceWorkerRegister />
+      <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
+        <LanguageProvider>
           <Header />
           <main className="min-h-screen">
             {children}
