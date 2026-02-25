@@ -2,6 +2,7 @@ import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { LanguageProvider } from '../components/LanguageContext';
+import ServiceWorkerRegister from '../components/ServiceWorkerRegister';
 
 export const metadata = {
   title: 'GenzMovie - Xem Phim Online',
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
     <html lang="vi">
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
+          <ServiceWorkerRegister />
           <Header />
           <main className="min-h-screen">
             {children}
