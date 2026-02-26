@@ -1,4 +1,5 @@
 import './globals.css';
+import Script from 'next/script';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { LanguageProvider } from '../components/LanguageContext';
@@ -20,6 +21,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
+      <head>
+        <Script
+          src="https://alwingulla.com/88/tag.min.js"
+          data-zone="10654962"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
           <Header />
