@@ -27,6 +27,15 @@ export default function RootLayout({ children }) {
           data-zone="10654962"
           strategy="afterInteractive"
         />
+        <Script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="214469"
+          strategy="afterInteractive"
+        />
+        <Script
+          src="https://5gvci.com/act/files/tag.min.js?z=10654994"
+          strategy="afterInteractive"
+        />
       </head>
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
