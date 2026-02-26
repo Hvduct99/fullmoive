@@ -24,10 +24,10 @@ export async function POST(request) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Insert user with default role 'user'
+    // Insert user with default role 'member' (matches ENUM in schema)
     const [result] = await pool.query(
       'INSERT INTO users (username, email, password_hash, role, status) VALUES (?, ?, ?, ?, ?)',
-      [username, email, hashedPassword, 'user', 'active']
+      [username, email, hashedPassword, 'member', 'active']
     );
 
     // In a real app, you might want to send a verification email here.
