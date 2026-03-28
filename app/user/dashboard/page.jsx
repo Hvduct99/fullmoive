@@ -11,14 +11,30 @@ export default function UserDashboard() {
 
   useEffect(() => {
     fetch('/api/user/profile')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch profile');
+        return res.json();
+      })
       .then(data => {
         setProfile(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setProfile(null);
         setLoading(false);
       });
   }, []);
 
-  if (loading) return <div className="text-white">Loading...</div>;
+  if (loading) return <div className="text-white p-8">Đang tải...</div>;
+
+  if (!profile || !profile.user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-400 mb-4">Không thể tải thông tin tài khoản.</p>
+        <a href="/login" className="text-yellow-500 hover:underline">Đăng nhập lại</a>
+      </div>
+    );
+  }
 
   const { user, stats } = profile;
   const isVip = Boolean(user.isVip);

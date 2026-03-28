@@ -24,7 +24,7 @@ export default async function UserLayout({ children }) {
   let userInfo = { role: session.role, username: '' };
   try {
     const [users] = await pool.query(
-      'SELECT username, role, vip_expire_at FROM users WHERE id = ?',
+      'SELECT * FROM users WHERE id = ?',
       [session.userId]
     );
     if (users.length > 0) userInfo = users[0];

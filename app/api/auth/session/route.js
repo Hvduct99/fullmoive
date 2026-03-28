@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const [users] = await pool.query(
-      'SELECT id, username, role, avatar, vip_expire_at FROM users WHERE id = ?',
+      'SELECT * FROM users WHERE id = ?',
       [session.userId]
     );
 

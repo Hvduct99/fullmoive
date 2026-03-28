@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const [users] = await pool.query(
-      'SELECT id, username, email, full_name, phone, avatar, role, vip_expire_at, created_at FROM users WHERE id = ?',
+      'SELECT * FROM users WHERE id = ?',
       [session.userId]
     );
 
@@ -20,25 +20,37 @@ export async function GET() {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    // Get watch stats
-    const [watchStats] = await pool.query(
-       'SELECT COUNT(*) as count FROM watch_history WHERE user_id = ?',
-       [session.userId]
-    );
-
     const user = users[0];
+
+    // Get watch stats safely (table may not exist)
+    let watchedCount = 0;
+    try {
+      const [watchStats] = await pool.query(
+        'SELECT COUNT(*) as count FROM watch_history WHERE user_id = ?',
+        [session.userId]
+      );
+      watchedCount = watchStats[0].count;
+    } catch (e) {}
+
     const vipState = getUserVipState(user);
 
     return NextResponse.json({
       user: {
-        ...user,
+        id: user.id,
+        username: user.username || '',
+        email: user.email || '',
+        full_name: user.full_name || '',
+        phone: user.phone || '',
+        avatar: user.avatar || '',
+        role: user.role || 'user',
+        created_at: user.created_at,
         isVip: vipState.isVip,
         vipExpired: vipState.vipExpired,
         vipExpireAt: vipState.vipExpireAt,
         membershipLabel: vipState.membershipLabel,
       },
       stats: {
-        watchedMovies: watchStats[0].count
+        watchedMovies: watchedCount
       }
     });
   } catch (error) {
@@ -55,12 +67,21 @@ export async function PUT(request) {
   
   try {
     const body = await request.json();
-    const { full_name, phone, avatar } = body; // Simplified for now
-    
-    await pool.query(
-      'UPDATE users SET full_name = ?, phone = ?, avatar = ? WHERE id = ?',
-      [full_name, phone, avatar, session.userId]
-    );
+    const { full_name, phone, avatar } = body;
+
+    // Update only columns that exist in the table
+    try {
+      await pool.query(
+        'UPDATE users SET full_name = ?, phone = ?, avatar = ? WHERE id = ?',
+        [full_name || null, phone || null, avatar || null, session.userId]
+      );
+    } catch (e) {
+      // If columns don't exist, try basic update
+      await pool.query(
+        'UPDATE users SET avatar = ? WHERE id = ?',
+        [avatar || null, session.userId]
+      );
+    }
 
     return NextResponse.json({ message: 'Profile updated' });
   } catch (error) {
