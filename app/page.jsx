@@ -2,7 +2,6 @@ import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
 import MovieMarquee from '../components/MovieMarquee';
 import AuthBanner, { AuthBottomCTA } from '../components/AuthBanner';
-import UserSidebar from '../components/UserSidebar';
 import { getMoviesBySection, getVipMoviePool, mixMoviesWithVip } from '../lib/services';
 
 export const revalidate = 1800;
@@ -40,21 +39,12 @@ export default async function Home() {
       <AuthBanner />
       <MovieMarquee movies={marqueeMovies} title="Kinh Dị & Khoa Học Viễn Tưởng Hot" />
 
-      {/* Main layout: sidebar (logged in) + content */}
-      <div className="container mx-auto px-2 md:px-4">
-        <div className="flex gap-6">
-          {/* User Sidebar - client component, shows only when logged in */}
-          <UserSidebar />
-
-          {/* Main Content */}
-          <div className="flex-1 min-w-0 space-y-8 md:space-y-12">
-            <Section title="Phim Đề Cử (Netflix)" movies={featuredMixed} link="/danh-sach/netflix" />
-            <Section title="Phim Chiếu Rạp" movies={theatricalMixed} link="/danh-sach/phim-chieu-rap" />
-            <Section title="Phim Mới Cập Nhật" movies={latestMixed} link="/danh-sach/phim-moi" />
-            <Section title="Hành Động & Kinh Dị" movies={actionMixed} link="/the-loai/hanh-dong" />
-            <Section title="Hoạt Hình & Tình Cảm" movies={animeMixed} link="/the-loai/hoat-hinh" />
-          </div>
-        </div>
+      <div className="container mx-auto px-2 md:px-4 space-y-8 md:space-y-12">
+        <Section title="Phim Đề Cử (Netflix)" movies={featuredMixed} link="/danh-sach/netflix" />
+        <Section title="Phim Chiếu Rạp" movies={theatricalMixed} link="/danh-sach/phim-chieu-rap" />
+        <Section title="Phim Mới Cập Nhật" movies={latestMixed} link="/danh-sach/phim-moi" />
+        <Section title="Hành Động & Kinh Dị" movies={actionMixed} link="/the-loai/hanh-dong" />
+        <Section title="Hoạt Hình & Tình Cảm" movies={animeMixed} link="/the-loai/hoat-hinh" />
       </div>
 
       <AuthBottomCTA />

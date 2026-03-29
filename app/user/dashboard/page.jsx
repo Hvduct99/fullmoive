@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -12,7 +11,7 @@ export default function UserDashboard() {
   useEffect(() => {
     fetch('/api/user/profile')
       .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch profile');
+        if (!res.ok) throw new Error('Failed');
         return res.json();
       })
       .then(data => {
@@ -42,89 +41,65 @@ export default function UserDashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Xin chào, {user.username || user.full_name} 👋</h2>
-      
+      <h2 className="text-2xl font-bold text-white">Xin chào, {user.username || user.full_name}</h2>
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className={`p-6 rounded-lg border ${isVip && !vipExpired ? 'bg-gradient-to-br from-yellow-500/10 to-[#1a1a1a] border-yellow-500/30' : 'bg-[#1a1a1a] border-[#333]'}`}>
+        <div className={`p-5 rounded-xl border ${isVip && !vipExpired ? 'bg-gradient-to-br from-yellow-500/10 to-[#1a1a1a] border-yellow-500/30' : 'bg-[#1a1a1a] border-[#333]'}`}>
           <p className="text-gray-400 text-sm mb-1">Gói hiện tại</p>
-          <h3 className={`text-2xl font-bold ${isVip && !vipExpired ? 'text-yellow-500' : 'text-white'}`}>
+          <h3 className={`text-xl font-bold ${isVip && !vipExpired ? 'text-yellow-500' : 'text-white'}`}>
             {isVip && !vipExpired ? (
-              <span className="flex items-center gap-2">
-                <Crown size={24} /> VIP Premium
-              </span>
-            ) : vipExpired ? (
-              'VIP đã hết hạn'
-            ) : (
-              'Miễn phí'
-            )}
+              <span className="flex items-center gap-2"><Crown size={20} /> VIP Premium</span>
+            ) : vipExpired ? 'VIP đã hết hạn' : 'Miễn phí'}
           </h3>
-            {isVip && !vipExpired && user.vipExpireAt ? (
-            <p className="text-xs text-gray-500 mt-2">
-              <Clock size={12} className="inline mr-1" />
-              Hết hạn: {new Date(user.vipExpireAt).toLocaleDateString('vi-VN')}
+          {isVip && !vipExpired && user.vipExpireAt && (
+            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+              <Clock size={12} /> Hết hạn: {new Date(user.vipExpireAt).toLocaleDateString('vi-VN')}
             </p>
-          ) : isVip && !vipExpired && !user.vipExpireAt ? (
-            <p className="text-xs text-yellow-500 mt-2">VIP Vĩnh viễn</p>
-          ) : null}
+          )}
         </div>
 
-        <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
+        <div className="bg-[#1a1a1a] p-5 rounded-xl border border-[#333]">
           <p className="text-gray-400 text-sm mb-1">Phim đã xem</p>
-          <h3 className="text-2xl font-bold text-white">{stats.watchedMovies}</h3>
-          <Link href="/user/history" className="text-xs text-gray-500 mt-2 block hover:underline">
-             Xem lịch sử &rarr;
-          </Link>
+          <h3 className="text-xl font-bold text-white">{stats.watchedMovies}</h3>
         </div>
-        
-        <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-           <p className="text-gray-400 text-sm mb-1">Phim chờ xem</p>
-           <h3 className="text-2xl font-bold text-white">0</h3>
-           <Link href="/user/watchlist" className="text-xs text-gray-500 mt-2 block hover:underline">
-              Danh sách của bạn &rarr;
-           </Link>
+
+        <div className="bg-[#1a1a1a] p-5 rounded-xl border border-[#333]">
+          <p className="text-gray-400 text-sm mb-1">Tài khoản</p>
+          <h3 className="text-xl font-bold text-white">{user.email}</h3>
+          <Link href="/user/profile" className="text-xs text-yellow-500 mt-2 block hover:underline">
+            Chỉnh sửa hồ sơ &rarr;
+          </Link>
         </div>
       </div>
 
-      {/* VIP Upgrade Section (show for non-VIP users) */}
+      {/* VIP Upgrade */}
       {(!isVip || vipExpired) && (
-        <div className="bg-gradient-to-r from-yellow-500/10 via-[#1a1a1a] to-yellow-500/5 p-6 rounded-lg border border-yellow-500/30">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <h3 className="text-xl font-bold text-yellow-500 flex items-center gap-2 mb-2">
-                <Crown size={24} /> Nâng cấp VIP
-              </h3>
-              <p className="text-gray-400 text-sm max-w-md">
-                Mở khóa toàn bộ phim Hành Động, Kinh Dị, Netflix và nhiều nội dung độc quyền khác!
-              </p>
+        <div className="bg-gradient-to-r from-yellow-500/10 via-[#1a1a1a] to-yellow-500/5 p-6 rounded-xl border border-yellow-500/30">
+          <h3 className="text-xl font-bold text-yellow-500 flex items-center gap-2 mb-2">
+            <Crown size={24} /> Nâng cấp VIP
+          </h3>
+          <p className="text-gray-400 text-sm mb-4">Mở khóa toàn bộ phim VIP!</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <Check size={16} className="text-yellow-500 shrink-0" /> Phim Hành Động, Kinh Dị
             </div>
-            <div className="shrink-0">
-              <p className="text-xs text-gray-500 mb-2 text-center">Liên hệ Admin để nâng cấp</p>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <Check size={16} className="text-yellow-500 shrink-0" /> Toàn bộ phim Netflix
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <Check size={16} className="text-yellow-500 shrink-0" /> Full HD / 4K
             </div>
           </div>
-          
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Check size={16} className="text-yellow-500 shrink-0" />
-              <span>Phim Hành Động, Kinh Dị mới nhất</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Check size={16} className="text-yellow-500 shrink-0" />
-              <span>Toàn bộ phim Netflix</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Check size={16} className="text-yellow-500 shrink-0" />
-              <span>Chất lượng Full HD / 4K</span>
-            </div>
-          </div>
+          <p className="text-xs text-gray-500 mt-4">Liên hệ Admin để nâng cấp</p>
         </div>
       )}
 
-      {/* VIP Content Access (show for VIP users) */}
+      {/* VIP Content */}
       {isVip && !vipExpired && (
-        <div className="bg-[#1a1a1a] p-6 rounded-lg border border-yellow-500/20">
+        <div className="bg-[#1a1a1a] p-6 rounded-xl border border-yellow-500/20">
           <h3 className="text-lg font-bold text-yellow-500 mb-4 flex items-center gap-2">
-            <Sparkles size={20} /> Nội dung VIP của bạn
+            <Sparkles size={20} /> Nội dung VIP
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Link href="/the-loai/hanh-dong" className="flex items-center gap-3 bg-[#252525] p-4 rounded-lg hover:bg-[#333] transition-colors">
@@ -157,14 +132,6 @@ export default function UserDashboard() {
           </div>
         </div>
       )}
-
-      {/* Continue Watching Section */}
-      <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-        <h3 className="text-lg font-bold text-white mb-4">Tiếp tục xem</h3>
-        <div className="text-center py-8 text-gray-500">
-           Bạn chưa xem dở phim nào. <Link href="/" className="text-yellow-500">Khám phá ngay</Link>
-        </div>
-      </div>
     </div>
   );
 }

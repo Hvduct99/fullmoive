@@ -3,10 +3,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -32,15 +29,12 @@ export default function LoginPage() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Check role to redirect
+      // Full page reload to refresh session in all components (sidebar, header)
       if (data.user.role === 'admin' || data.user.role === 'moderator') {
-        router.push('/admin');
+        window.location.href = '/admin';
       } else {
-        router.push('/');
+        window.location.href = '/';
       }
-      
-      // Refresh router to update server components
-      router.refresh();
       
     } catch (err) {
       setError(err.message);
