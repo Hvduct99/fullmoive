@@ -106,6 +106,7 @@ export default function UsersManagement() {
               <th className="px-6 py-3">Role</th>
               <th className="px-6 py-3">Status</th>
               <th className="px-6 py-3">VIP Expiry</th>
+              <th className="px-6 py-3">Số dư</th>
               <th className="px-6 py-3">Joined</th>
               <th className="px-6 py-3">Actions</th>
             </tr>
@@ -161,6 +162,9 @@ export default function UsersManagement() {
                   ) : (
                     <span className="text-gray-600">-</span>
                   )}
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-sm text-white font-semibold">{Number(user.balance || 0).toLocaleString()} đ</span>
                 </td>
                 <td className="px-6 py-4">
                    {new Date(user.created_at).toLocaleDateString('vi-VN')}

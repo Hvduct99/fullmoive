@@ -195,6 +195,7 @@ export default function UserProfile() {
                 {profile.isVip ? <Crown size={10} className="inline mr-1" /> : <Shield size={10} className="inline mr-1" />}
                 {profile.membershipLabel}
               </span>
+              <span className="text-xs text-gray-400">Số dư: <strong className="text-white">{Number(profile.balance || 0).toLocaleString()} đ</strong></span>
               {profile.isVip && profile.vipExpireAt && (
                 <span className="text-[11px] text-gray-500 flex items-center gap-1">
                   <Clock size={11} /> Hết hạn: {new Date(profile.vipExpireAt).toLocaleDateString('vi-VN')}

@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
 export async function GET(request) {
   const session = await getSession();
@@ -17,7 +18,8 @@ export async function GET(request) {
   const offset = (page - 1) * limit;
 
   try {
-    let query = 'SELECT id, username, email, role, status, created_at, vip_expire_at FROM users';
+    await ensureDatabaseSchema();
+    let query = 'SELECT id, username, email, role, status, created_at, vip_expire_at, COALESCE(balance,0) as balance FROM users';
     let countQuery = 'SELECT COUNT(*) as total FROM users';
     let conditions = [];
     let params = [];
@@ -65,6 +67,7 @@ export async function PUT(request) {
   }
 
   try {
+    await ensureDatabaseSchema();
     const { userId, action, vipDays } = await request.json();
 
     if (!userId || !action) {

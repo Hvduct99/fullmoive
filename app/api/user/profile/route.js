@@ -3,6 +3,7 @@ import pool from '@/lib/db';
 import { getSession, deleteSession } from '@/lib/session';
 import { getUserVipState } from '@/lib/vip';
 import { verifyPassword, hashPassword } from '@/lib/password';
+import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
 // READ - Get user profile
 export async function GET() {
@@ -12,8 +13,10 @@ export async function GET() {
   }
 
   try {
+    await ensureDatabaseSchema();
+
     const [users] = await pool.query(
-      'SELECT * FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, phone, avatar, role, status, created_at, vip_expire_at, COALESCE(balance,0) as balance FROM users WHERE id = ?',
       [session.userId]
     );
 
@@ -44,6 +47,7 @@ export async function GET() {
         avatar: user.avatar || '',
         role: user.role || 'user',
         created_at: user.created_at,
+        balance: Number(user.balance || 0),
         isVip: vipState.isVip,
         vipExpired: vipState.vipExpired,
         vipExpireAt: vipState.vipExpireAt,

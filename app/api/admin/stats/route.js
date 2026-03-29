@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
+import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
 export async function GET() {
   const session = await getSession();
@@ -11,6 +12,7 @@ export async function GET() {
   }
 
   try {
+    await ensureDatabaseSchema();
     const [movieCount] = await pool.query('SELECT COUNT(*) as count FROM movies');
     const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users');
     const [vipCount] = await pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'vip'");
@@ -18,6 +20,8 @@ export async function GET() {
     const [recentUsers] = await pool.query('SELECT id, username, role, created_at FROM users ORDER BY created_at DESC LIMIT 5');
     // Simulated revenue (since we don't have completed transactions yet in detail)
     const [revenue] = await pool.query('SELECT SUM(amount) as total FROM transactions WHERE status = "completed"');
+    const [totalBalance] = await pool.query('SELECT SUM(balance) as total FROM users');
+    const [pendingTopups] = await pool.query('SELECT SUM(amount) as total FROM transactions WHERE type = "deposit" AND status = "pending"');
 
     return NextResponse.json({
       totalMovies: movieCount[0].count,
@@ -25,6 +29,8 @@ export async function GET() {
       totalVipUsers: vipCount[0].count,
       totalViews: viewCount[0].count || 0,
       totalRevenue: revenue[0].total || 0,
+      totalBalance: (totalBalance[0].total || 0),
+      pendingTopups: (pendingTopups[0].total || 0),
       recentUsers
     });
   } catch (error) {
