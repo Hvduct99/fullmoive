@@ -4,54 +4,43 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Play, Crown, Shield, Clock, Sparkles, Check } from 'lucide-react';
 
+const VIP_PRICE = 12000;
+
 export default function UserDashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
-  const [depositAmount, setDepositAmount] = useState(12000);
+  const [depositAmount, setDepositAmount] = useState(VIP_PRICE);
   const [transferNote, setTransferNote] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
-  const [depositMessage, setDepositMessage] = useState('');
-  const [claimVipLoading, setClaimVipLoading] = useState(false);
-  const [claimVipMessage, setClaimVipMessage] = useState('');
+  const [depositMsg, setDepositMsg] = useState('');
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimMsg, setClaimMsg] = useState('');
 
-  const fetchTransactions = async () => {
-    try {
-      const res = await fetch('/api/user/transactions');
-      const data = await res.json();
-      if (res.ok) setTransactions(data.transactions || []);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const fetchProfile = () => fetch('/api/user/profile').then(r => r.ok ? r.json() : null);
+  const fetchTx = () => fetch('/api/user/transactions').then(r => r.ok ? r.json() : { transactions: [] });
 
   useEffect(() => {
-    fetch('/api/user/profile')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed');
-        return res.json();
+    Promise.all([fetchProfile(), fetchTx()])
+      .then(([p, t]) => {
+        setProfile(p);
+        setTransactions(t?.transactions || []);
+        if (p?.user) setTransferNote(p.user.username);
       })
-      .then(async data => {
-        setProfile(data);
-        await fetchTransactions();
-        setLoading(false);
-      })
-      .catch(() => {
-        setProfile(null);
-        setLoading(false);
-      });
+      .catch(() => setProfile(null))
+      .finally(() => setLoading(false));
   }, []);
 
+  const refreshData = async () => {
+    const [p, t] = await Promise.all([fetchProfile(), fetchTx()]);
+    if (p) setProfile(p);
+    setTransactions(t?.transactions || []);
+  };
+
   const handleDeposit = async () => {
-    setDepositMessage('');
-    if (!depositAmount || Number(depositAmount) <= 0) {
-      setDepositMessage('Số tiền phải lớn hơn 0');
-      return;
-    }
-    if (!transferNote.trim()) {
-      setDepositMessage('Vui lòng nhập nội dung chuyển khoản (tên đăng nhập)');
-      return;
-    }
+    setDepositMsg('');
+    if (!depositAmount || depositAmount < 1000) { setDepositMsg('Số tiền tối thiểu 1.000 đ'); return; }
+    if (!transferNote.trim()) { setDepositMsg('Vui lòng nhập nội dung chuyển khoản'); return; }
 
     setDepositLoading(true);
     try {
@@ -61,40 +50,26 @@ export default function UserDashboard() {
         body: JSON.stringify({ amount: depositAmount, note: transferNote.trim() })
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Lỗi nạp tiền');
-      setDepositMessage(data.message);
-      fetchTransactions();
-    } catch (error) {
-      setDepositMessage(error.message || 'Lỗi nạp tiền');
-    } finally {
-      setDepositLoading(false);
-    }
+      setDepositMsg(data.message);
+      if (res.ok) refreshData();
+    } catch { setDepositMsg('Lỗi kết nối'); }
+    finally { setDepositLoading(false); }
   };
 
   const handleClaimVip = async () => {
-    setClaimVipMessage('');
-    setClaimVipLoading(true);
+    setClaimMsg('');
+    setClaimLoading(true);
     try {
       const res = await fetch('/api/user/claim-vip', { method: 'POST' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Lỗi đăng ký VIP');
-      setClaimVipMessage(data.message);
-      const profileRes = await fetch('/api/user/profile');
-      if (profileRes.ok) {
-        const updatedProfile = await profileRes.json();
-        setProfile(updatedProfile);
-      }
-      fetchTransactions();
-    } catch (error) {
-      setClaimVipMessage(error.message || 'Lỗi đăng ký VIP');
-    } finally {
-      setClaimVipLoading(false);
-    }
+      setClaimMsg(data.message);
+      if (res.ok) refreshData();
+    } catch { setClaimMsg('Lỗi kết nối'); }
+    finally { setClaimLoading(false); }
   };
 
   if (loading) return <div className="text-white p-8">Đang tải...</div>;
-
-  if (!profile || !profile.user) {
+  if (!profile?.user) {
     return (
       <div className="text-center py-12">
         <p className="text-red-400 mb-4">Không thể tải thông tin tài khoản.</p>
@@ -103,22 +78,22 @@ export default function UserDashboard() {
     );
   }
 
-  const { user, stats } = profile;
+  const { user } = profile;
   const isVip = Boolean(user.isVip);
   const vipExpired = Boolean(user.vipExpired);
+  const canClaimVip = user.balance >= VIP_PRICE && !isVip;
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white">Xin chào, {user.username || user.full_name}</h2>
+      <h2 className="text-2xl font-bold text-white">Xin chào, {user.username}</h2>
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className={`p-5 rounded-xl border ${isVip && !vipExpired ? 'bg-gradient-to-br from-yellow-500/10 to-[#1a1a1a] border-yellow-500/30' : 'bg-[#1a1a1a] border-[#333]'}`}>
           <p className="text-gray-400 text-sm mb-1">Gói hiện tại</p>
-          <h3 className={`text-xl font-bold ${isVip && !vipExpired ? 'text-yellow-500' : 'text-white'}`}>
-            {isVip && !vipExpired ? (
-              <span className="flex items-center gap-2"><Crown size={20} /> VIP Premium</span>
-            ) : vipExpired ? 'VIP đã hết hạn' : 'Miễn phí'}
+          <h3 className={`text-xl font-bold ${isVip ? 'text-yellow-500' : 'text-white'}`}>
+            {isVip && !vipExpired ? <span className="flex items-center gap-2"><Crown size={20} /> VIP Premium</span>
+              : vipExpired ? 'VIP đã hết hạn' : 'Miễn phí'}
           </h3>
           {isVip && !vipExpired && user.vipExpireAt && (
             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
@@ -128,117 +103,102 @@ export default function UserDashboard() {
         </div>
 
         <div className="bg-[#1a1a1a] p-5 rounded-xl border border-[#333]">
-          <p className="text-gray-400 text-sm mb-1">Phim đã xem</p>
-          <h3 className="text-xl font-bold text-white">{stats.watchedMovies}</h3>
+          <p className="text-gray-400 text-sm mb-1">Số dư ví</p>
+          <h3 className="text-xl font-bold text-yellow-300">{Number(user.balance || 0).toLocaleString()} đ</h3>
         </div>
 
         <div className="bg-[#1a1a1a] p-5 rounded-xl border border-[#333]">
           <p className="text-gray-400 text-sm mb-1">Tài khoản</p>
           <h3 className="text-xl font-bold text-white">{user.email}</h3>
-          <Link href="/user/profile" className="text-xs text-yellow-500 mt-2 block hover:underline">
-            Chỉnh sửa hồ sơ &rarr;
-          </Link>
+          <Link href="/user/profile" className="text-xs text-yellow-500 mt-2 block hover:underline">Chỉnh sửa hồ sơ &rarr;</Link>
         </div>
       </div>
 
-      {/* Balance + Deposit */}
+      {/* Deposit + VIP */}
       <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 space-y-4">
-        <h3 className="text-xl font-bold text-white">Số dư ví: <span className="text-yellow-300">{user.balance?.toLocaleString() || 0} đ</span></h3>
-        <p className="text-sm text-gray-400">Nạp tối thiểu 12.000 đ để đăng ký VIP.</p>
+        <h3 className="text-xl font-bold text-white">Nạp tiền & Đăng ký VIP</h3>
+        <p className="text-sm text-gray-400">Nạp tối thiểu {VIP_PRICE.toLocaleString()} đ để đăng ký VIP 30 ngày.</p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* QR + Instructions */}
           <div className="bg-[#121212] p-4 rounded-lg border border-[#222]">
-            <p className="text-sm text-gray-200 mb-2">Hướng dẫn chuyển khoản</p>
-            <p className="text-xs text-gray-400 mb-1">- Quét mã QR Phương thức chuyển khoản</p>
-            <p className="text-xs text-gray-400 mb-1">- Nội dung chuyển khoản phải là tên đăng nhập của bạn: <span className="font-semibold text-white">{user.username}</span></p>
-            <p className="text-xs text-gray-400 mb-4">- Sau thao tác, hệ thống ghi nhận giao dịch tạm thời (pending). Admin duyệt rồi cộng số dư.</p>
-            <img src="/api/user/qr" alt="QR chuyển khoản" className="w-full rounded-md border border-gray-800" />
+            <p className="text-sm text-gray-200 mb-2 font-semibold">Hướng dẫn chuyển khoản</p>
+            <p className="text-xs text-gray-400 mb-1">1. Quét mã QR bên dưới</p>
+            <p className="text-xs text-gray-400 mb-1">2. Nội dung chuyển khoản <strong className="text-white">bắt buộc</strong> là tên đăng nhập: <span className="text-yellow-400 font-semibold">{user.username}</span></p>
+            <p className="text-xs text-gray-400 mb-3">3. Gửi yêu cầu nạp tiền, chờ admin duyệt</p>
+            <img src="/images/QR.jpg" alt="QR chuyển khoản" className="w-full max-w-[250px] rounded-md border border-gray-800" />
           </div>
 
-          <div className="bg-[#121212] p-4 rounded-lg border border-[#222]">
-            <label className="text-xs text-gray-400 mb-1 block">Số tiền (VND)</label>
-            <input type="number" value={depositAmount} min={1000} onChange={e => setDepositAmount(Number(e.target.value))} className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-3 py-2 text-white mb-2" />
-            <label className="text-xs text-gray-400 mb-1 block">Nội dung chuyển khoản</label>
-            <input value={transferNote} onChange={e => setTransferNote(e.target.value)} placeholder="Tên đăng nhập" className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-3 py-2 text-white mb-3" />
-            <button onClick={handleDeposit} disabled={depositLoading} className="w-full bg-yellow-500 text-black py-2 rounded hover:bg-yellow-400">
+          {/* Deposit Form */}
+          <div className="bg-[#121212] p-4 rounded-lg border border-[#222] space-y-3">
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Số tiền (VND)</label>
+              <input type="number" value={depositAmount} min={1000} onChange={e => setDepositAmount(Number(e.target.value))}
+                className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-3 py-2 text-white" />
+            </div>
+            <div>
+              <label className="text-xs text-gray-400 mb-1 block">Nội dung chuyển khoản</label>
+              <input value={transferNote} onChange={e => setTransferNote(e.target.value)} placeholder="Tên đăng nhập"
+                className="w-full bg-[#1a1a1a] border border-gray-700 rounded px-3 py-2 text-white" />
+            </div>
+            <button onClick={handleDeposit} disabled={depositLoading}
+              className="w-full bg-yellow-500 text-black font-bold py-2 rounded hover:bg-yellow-400 disabled:opacity-50">
               {depositLoading ? 'Đang gửi...' : 'Gửi yêu cầu nạp tiền'}
             </button>
-            {depositMessage && <p className="text-xs text-green-300 mt-2">{depositMessage}</p>}
-            <button onClick={handleClaimVip} disabled={claimVipLoading || user.balance < 12000 || (isVip && !vipExpired)} className="mt-2 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-400 disabled:opacity-50">
-              {claimVipLoading ? 'Đang xử lý VIP...' : 'Đăng ký VIP (12000 đ)'}
+            {depositMsg && <p className="text-xs text-green-300">{depositMsg}</p>}
+
+            <button onClick={handleClaimVip} disabled={claimLoading || !canClaimVip}
+              className="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-500 disabled:opacity-50">
+              {claimLoading ? 'Đang xử lý...' : `Đăng ký VIP (${VIP_PRICE.toLocaleString()} đ)`}
             </button>
-            <p className="text-xs mt-1 text-gray-400">{claimVipMessage}</p>
+            {!canClaimVip && !isVip && <p className="text-xs text-gray-500">Cần nạp đủ {VIP_PRICE.toLocaleString()} đ để đăng ký</p>}
+            {isVip && !vipExpired && <p className="text-xs text-yellow-400">Bạn đã là VIP</p>}
+            {claimMsg && <p className="text-xs text-blue-300">{claimMsg}</p>}
           </div>
         </div>
       </div>
 
-      {/* VIP Upgrade */}
+      {/* VIP Upgrade Banner */}
       {(!isVip || vipExpired) && (
         <div className="bg-gradient-to-r from-yellow-500/10 via-[#1a1a1a] to-yellow-500/5 p-6 rounded-xl border border-yellow-500/30">
-          <h3 className="text-xl font-bold text-yellow-500 flex items-center gap-2 mb-2">
-            <Crown size={24} /> Nâng cấp VIP
-          </h3>
-          <p className="text-gray-400 text-sm mb-4">Mở khóa toàn bộ phim VIP!</p>
+          <h3 className="text-xl font-bold text-yellow-500 flex items-center gap-2 mb-2"><Crown size={24} /> Nâng cấp VIP</h3>
+          <p className="text-gray-400 text-sm mb-3">Mở khóa toàn bộ phim VIP!</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Check size={16} className="text-yellow-500 shrink-0" /> Phim Hành Động, Kinh Dị
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Check size={16} className="text-yellow-500 shrink-0" /> Toàn bộ phim Netflix
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Check size={16} className="text-yellow-500 shrink-0" /> Full HD / 4K
-            </div>
+            {['Phim Hành Động, Kinh Dị', 'Toàn bộ phim Netflix', 'Full HD / 4K'].map(t => (
+              <div key={t} className="flex items-center gap-2 text-sm text-gray-300">
+                <Check size={16} className="text-yellow-500 shrink-0" /> {t}
+              </div>
+            ))}
           </div>
-          <p className="text-xs text-gray-500 mt-4">Liên hệ Admin để nâng cấp</p>
         </div>
       )}
 
-      {/* VIP Content */}
+      {/* VIP Content Links */}
       {isVip && !vipExpired && (
         <div className="bg-[#1a1a1a] p-6 rounded-xl border border-yellow-500/20">
-          <h3 className="text-lg font-bold text-yellow-500 mb-4 flex items-center gap-2">
-            <Sparkles size={20} /> Nội dung VIP
-          </h3>
+          <h3 className="text-lg font-bold text-yellow-500 mb-4 flex items-center gap-2"><Sparkles size={20} /> Nội dung VIP</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Link href="/the-loai/hanh-dong" className="flex items-center gap-3 bg-[#252525] p-4 rounded-lg hover:bg-[#333] transition-colors">
-              <div className="w-10 h-10 bg-red-500/20 rounded-lg flex items-center justify-center">
-                <Shield size={20} className="text-red-500" />
-              </div>
-              <div>
-                <p className="text-white font-medium">Hành Động</p>
-                <p className="text-xs text-gray-500">VIP Content</p>
-              </div>
-            </Link>
-            <Link href="/the-loai/kinh-di" className="flex items-center gap-3 bg-[#252525] p-4 rounded-lg hover:bg-[#333] transition-colors">
-              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                <Shield size={20} className="text-purple-500" />
-              </div>
-              <div>
-                <p className="text-white font-medium">Kinh Dị</p>
-                <p className="text-xs text-gray-500">VIP Content</p>
-              </div>
-            </Link>
-            <Link href="/danh-sach/netflix" className="flex items-center gap-3 bg-[#252525] p-4 rounded-lg hover:bg-[#333] transition-colors">
-              <div className="w-10 h-10 bg-red-600/20 rounded-lg flex items-center justify-center">
-                <Play size={20} className="text-red-500" />
-              </div>
-              <div>
-                <p className="text-white font-medium">Netflix</p>
-                <p className="text-xs text-gray-500">VIP Content</p>
-              </div>
-            </Link>
+            {[
+              { href: '/the-loai/hanh-dong', label: 'Hành Động', color: 'red', icon: <Shield size={20} className="text-red-500" /> },
+              { href: '/the-loai/kinh-di', label: 'Kinh Dị', color: 'purple', icon: <Shield size={20} className="text-purple-500" /> },
+              { href: '/danh-sach/netflix', label: 'Netflix', color: 'red', icon: <Play size={20} className="text-red-500" /> },
+            ].map(item => (
+              <Link key={item.href} href={item.href} className="flex items-center gap-3 bg-[#252525] p-4 rounded-lg hover:bg-[#333]">
+                <div className={`w-10 h-10 bg-${item.color}-500/20 rounded-lg flex items-center justify-center`}>{item.icon}</div>
+                <div><p className="text-white font-medium">{item.label}</p><p className="text-xs text-gray-500">VIP Content</p></div>
+              </Link>
+            ))}
           </div>
         </div>
       )}
 
+      {/* Transaction History */}
       <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6">
-        <h3 className="text-lg font-bold text-white mb-3">Lịch sử giao dịch gần nhất</h3>
+        <h3 className="text-lg font-bold text-white mb-3">Lịch sử giao dịch</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-gray-300">
             <thead className="bg-[#252525] uppercase text-xs">
               <tr>
-                <th className="px-3 py-2">ID</th>
                 <th className="px-3 py-2">Loại</th>
                 <th className="px-3 py-2">Số tiền</th>
                 <th className="px-3 py-2">Trạng thái</th>
@@ -248,19 +208,24 @@ export default function UserDashboard() {
             </thead>
             <tbody>
               {transactions.length === 0 ? (
-                <tr><td colSpan="6" className="px-3 py-4 text-center text-gray-400">Chưa có giao dịch</td></tr>
-              ) : (
-                transactions.map(tx => (
-                  <tr key={tx.id} className="border-t border-[#333] hover:bg-[#1f1f1f]">
-                    <td className="px-3 py-2">{tx.id}</td>
-                    <td className="px-3 py-2">{tx.type}</td>
-                    <td className="px-3 py-2">{Number(tx.amount).toLocaleString()} đ</td>
-                    <td className="px-3 py-2">{tx.status}</td>
-                    <td className="px-3 py-2">{tx.note || '-'}</td>
-                    <td className="px-3 py-2">{new Date(tx.created_at).toLocaleString('vi-VN')}</td>
-                  </tr>
-                ))
-              )}
+                <tr><td colSpan="5" className="px-3 py-4 text-center text-gray-500">Chưa có giao dịch</td></tr>
+              ) : transactions.map(tx => (
+                <tr key={tx.id} className="border-t border-[#333] hover:bg-[#1f1f1f]">
+                  <td className="px-3 py-2">
+                    <span className={`text-xs px-2 py-0.5 rounded ${tx.type === 'deposit' ? 'bg-green-900 text-green-200' : 'bg-yellow-900 text-yellow-200'}`}>
+                      {tx.type === 'deposit' ? 'Nạp tiền' : 'Mua VIP'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 font-semibold">{Number(tx.amount).toLocaleString()} đ</td>
+                  <td className="px-3 py-2">
+                    <span className={`text-xs ${tx.status === 'completed' ? 'text-green-400' : tx.status === 'pending' ? 'text-yellow-400' : 'text-red-400'}`}>
+                      {tx.status === 'completed' ? 'Hoàn thành' : tx.status === 'pending' ? 'Chờ duyệt' : 'Từ chối'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2 text-gray-400">{tx.note || '-'}</td>
+                  <td className="px-3 py-2 text-gray-500">{new Date(tx.created_at).toLocaleString('vi-VN')}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

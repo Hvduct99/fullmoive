@@ -11,14 +11,15 @@ export async function GET() {
 
   try {
     await ensureDatabaseSchema();
-
     const [comments] = await pool.query(
-      'SELECT c.id, c.user_id, u.username, c.movie_slug, c.content, c.rating, c.status, c.created_at, c.updated_at FROM comments c JOIN users u ON c.user_id = u.id ORDER BY c.created_at DESC LIMIT 500'
+      `SELECT c.id, u.username, c.movie_slug, c.content, c.rating, c.status, c.created_at
+       FROM comments c JOIN users u ON c.user_id = u.id
+       ORDER BY c.created_at DESC LIMIT 200`
     );
     return NextResponse.json({ comments });
   } catch (error) {
-    console.error('Admin fetch comments error:', error);
-    return NextResponse.json({ message: 'Lỗi lấy comment admin', error: error.message }, { status: 500 });
+    console.error('Admin comments GET error:', error);
+    return NextResponse.json({ message: 'Lỗi tải bình luận' }, { status: 500 });
   }
 }
 
@@ -30,35 +31,22 @@ export async function PUT(request) {
 
   try {
     await ensureDatabaseSchema();
+    const { id, status, content } = await request.json();
 
-    const body = await request.json();
-    const { id, status, content } = body;
-    if (!id) {
-      return NextResponse.json({ message: 'Missing id' }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ message: 'Missing id' }, { status: 400 });
 
     const updates = [];
     const params = [];
-    if (status) {
-      updates.push('status = ?');
-      params.push(status);
-    }
-    if (content !== undefined) {
-      updates.push('content = ?');
-      params.push(content);
-    }
-
-    if (updates.length === 0) {
-      return NextResponse.json({ message: 'Không có trường cập nhật' }, { status: 400 });
-    }
+    if (status) { updates.push('status = ?'); params.push(status); }
+    if (content !== undefined) { updates.push('content = ?'); params.push(content); }
+    if (updates.length === 0) return NextResponse.json({ message: 'Không có gì cập nhật' }, { status: 400 });
 
     params.push(id);
     await pool.query(`UPDATE comments SET ${updates.join(', ')} WHERE id = ?`, params);
-
     return NextResponse.json({ message: 'Cập nhật bình luận thành công' });
   } catch (error) {
-    console.error('Admin update comment error:', error);
-    return NextResponse.json({ message: 'Lỗi cập nhật comment admin', error: error.message }, { status: 500 });
+    console.error('Admin comments PUT error:', error);
+    return NextResponse.json({ message: 'Lỗi cập nhật bình luận' }, { status: 500 });
   }
 }
 
@@ -70,17 +58,14 @@ export async function DELETE(request) {
 
   try {
     await ensureDatabaseSchema();
-
     const { searchParams } = new URL(request.url);
     const id = parseInt(searchParams.get('id'));
-    if (!id) {
-      return NextResponse.json({ message: 'Missing id' }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ message: 'Missing id' }, { status: 400 });
 
     await pool.query('DELETE FROM comments WHERE id = ?', [id]);
     return NextResponse.json({ message: 'Đã xóa bình luận' });
   } catch (error) {
-    console.error('Admin delete comment error:', error);
-    return NextResponse.json({ message: 'Lỗi xóa comment admin', error: error.message }, { status: 500 });
+    console.error('Admin comments DELETE error:', error);
+    return NextResponse.json({ message: 'Lỗi xóa bình luận' }, { status: 500 });
   }
 }

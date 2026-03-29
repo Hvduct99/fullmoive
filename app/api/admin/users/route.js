@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
@@ -19,8 +18,7 @@ export async function GET(request) {
 
   try {
     await ensureDatabaseSchema();
-    let query = 'SELECT id, username, email, role, status, created_at, vip_expire_at, COALESCE(balance,0) as balance FROM users';
-    let countQuery = 'SELECT COUNT(*) as total FROM users';
+
     let conditions = [];
     let params = [];
 
@@ -28,23 +26,21 @@ export async function GET(request) {
       conditions.push('(username LIKE ? OR email LIKE ?)');
       params.push(`%${search}%`, `%${search}%`);
     }
-
     if (roleFilter) {
       conditions.push('role = ?');
       params.push(roleFilter);
     }
 
-    if (conditions.length > 0) {
-      const whereClause = ' WHERE ' + conditions.join(' AND ');
-      query += whereClause;
-      countQuery += whereClause;
-    }
+    const where = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
 
-    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-    const queryParams = [...params, limit, offset];
-
-    const [users] = await pool.query(query, queryParams);
-    const [totalResult] = await pool.query(countQuery, params);
+    const [users] = await pool.query(
+      `SELECT id, username, email, role, COALESCE(status,'active') as status, created_at, vip_expire_at, COALESCE(balance,0) as balance FROM users${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      [...params, limit, offset]
+    );
+    const [totalResult] = await pool.query(
+      `SELECT COUNT(*) as total FROM users${where}`,
+      params
+    );
 
     return NextResponse.json({
       users,
@@ -52,14 +48,12 @@ export async function GET(request) {
       page,
       totalPages: Math.ceil(totalResult[0].total / limit)
     });
-
   } catch (error) {
-     console.error('Fetch users error:', error);
-     return NextResponse.json({ message: 'Error fetching users' }, { status: 500 });
+    console.error('Fetch users error:', error);
+    return NextResponse.json({ message: 'Error fetching users' }, { status: 500 });
   }
 }
 
-// PUT: Cập nhật role/VIP cho user (Admin only)
 export async function PUT(request) {
   const session = await getSession();
   if (!session || session.role !== 'admin') {
@@ -73,8 +67,6 @@ export async function PUT(request) {
     if (!userId || !action) {
       return NextResponse.json({ message: 'Missing userId or action' }, { status: 400 });
     }
-
-    // Không cho phép thay đổi chính mình
     if (userId === session.userId) {
       return NextResponse.json({ message: 'Không thể thay đổi tài khoản của chính mình' }, { status: 400 });
     }
@@ -82,28 +74,19 @@ export async function PUT(request) {
     if (action === 'grant_vip') {
       const days = parseInt(vipDays) || 30;
       const expireAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-      await pool.query(
-        'UPDATE users SET role = ?, vip_expire_at = ? WHERE id = ?',
-        ['vip', expireAt, userId]
-      );
+      await pool.query('UPDATE users SET role = ?, vip_expire_at = ? WHERE id = ?', ['vip', expireAt, userId]);
       return NextResponse.json({ message: `Đã cấp VIP ${days} ngày thành công` });
     }
-
     if (action === 'revoke_vip') {
-      await pool.query(
-        'UPDATE users SET role = ?, vip_expire_at = NULL WHERE id = ?',
-        ['member', userId]
-      );
+      await pool.query('UPDATE users SET role = ?, vip_expire_at = NULL WHERE id = ?', ['member', userId]);
       return NextResponse.json({ message: 'Đã thu hồi VIP thành công' });
     }
-
     if (action === 'ban') {
-      await pool.query('UPDATE users SET status = ? WHERE id = ?', ['banned', userId]);
+      await pool.query("UPDATE users SET status = 'banned' WHERE id = ?", [userId]);
       return NextResponse.json({ message: 'Đã ban user' });
     }
-
     if (action === 'unban') {
-      await pool.query('UPDATE users SET status = ? WHERE id = ?', ['active', userId]);
+      await pool.query("UPDATE users SET status = 'active' WHERE id = ?", [userId]);
       return NextResponse.json({ message: 'Đã unban user' });
     }
 

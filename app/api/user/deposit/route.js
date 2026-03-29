@@ -5,42 +5,35 @@ import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
 export async function POST(request) {
   const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  }
+  if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   try {
     await ensureDatabaseSchema();
+    const { amount, note } = await request.json();
+    const parsedAmount = Number(amount);
 
-    const body = await request.json();
-    let { amount, note } = body;
-    amount = Number(amount || 0);
-
-    if (isNaN(amount) || amount <= 0) {
-      return NextResponse.json({ message: 'Vui lòng nhập số tiền hợp lệ lớn hơn 0' }, { status: 400 });
+    if (!parsedAmount || parsedAmount < 1000) {
+      return NextResponse.json({ message: 'Số tiền tối thiểu 1.000 đ' }, { status: 400 });
     }
-    if (!note || note.trim() === '') {
+    if (!note || !note.trim()) {
       return NextResponse.json({ message: 'Nội dung chuyển khoản bắt buộc (tên đăng nhập)' }, { status: 400 });
     }
 
     const [userRows] = await pool.query('SELECT username FROM users WHERE id = ?', [session.userId]);
-    if (userRows.length === 0) {
-      return NextResponse.json({ message: 'User không tồn tại' }, { status: 404 });
+    if (userRows.length === 0) return NextResponse.json({ message: 'User không tồn tại' }, { status: 404 });
+
+    if (note.trim() !== userRows[0].username) {
+      return NextResponse.json({ message: `Nội dung chuyển khoản phải đúng tên đăng nhập: "${userRows[0].username}"` }, { status: 400 });
     }
 
-    const username = userRows[0].username;
-    if (note.trim() !== username) {
-      return NextResponse.json({ message: 'Nội dung chuyển khoản phải đúng tên đăng nhập của bạn' }, { status: 400 });
-    }
-
-    const [result] = await pool.query(
+    await pool.query(
       'INSERT INTO transactions (user_id, amount, type, status, note) VALUES (?, ?, ?, ?, ?)',
-      [session.userId, amount, 'deposit', 'pending', note.trim()]
+      [session.userId, parsedAmount, 'deposit', 'pending', note.trim()]
     );
 
-    return NextResponse.json({ message: 'Yêu cầu nạp tiền đã được ghi nhận. Vui lòng chờ admin xác nhận.', transactionId: result.insertId });
+    return NextResponse.json({ message: 'Yêu cầu nạp tiền đã ghi nhận. Vui lòng chờ admin xác nhận.' });
   } catch (error) {
     console.error('Deposit error:', error);
-    return NextResponse.json({ message: 'Lỗi khi ghi nhận nạp tiền', error: error.message }, { status: 500 });
+    return NextResponse.json({ message: 'Lỗi ghi nhận nạp tiền' }, { status: 500 });
   }
 }

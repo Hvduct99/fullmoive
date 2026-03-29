@@ -1,4 +1,3 @@
-
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
@@ -6,31 +5,32 @@ import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
 export async function GET() {
   const session = await getSession();
-  
   if (!session || (session.role !== 'admin' && session.role !== 'moderator')) {
     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
   }
 
   try {
     await ensureDatabaseSchema();
-    const [movieCount] = await pool.query('SELECT COUNT(*) as count FROM movies');
+
     const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users');
     const [vipCount] = await pool.query("SELECT COUNT(*) as count FROM users WHERE role = 'vip'");
-    const [viewCount] = await pool.query('SELECT SUM(view) as count FROM movies');
-    const [recentUsers] = await pool.query('SELECT id, username, role, created_at FROM users ORDER BY created_at DESC LIMIT 5');
-    // Simulated revenue (since we don't have completed transactions yet in detail)
-    const [revenue] = await pool.query('SELECT SUM(amount) as total FROM transactions WHERE status = "completed"');
-    const [totalBalance] = await pool.query('SELECT SUM(balance) as total FROM users');
-    const [pendingTopups] = await pool.query('SELECT SUM(amount) as total FROM transactions WHERE type = "deposit" AND status = "pending"');
+    const [recentUsers] = await pool.query(
+      'SELECT id, username, role, status, created_at FROM users ORDER BY created_at DESC LIMIT 5'
+    );
+    const [revenue] = await pool.query(
+      "SELECT COALESCE(SUM(amount),0) as total FROM transactions WHERE type = 'vip_purchase' AND status = 'completed'"
+    );
+    const [pendingCount] = await pool.query(
+      "SELECT COUNT(*) as count FROM transactions WHERE status = 'pending'"
+    );
+    const [totalBalance] = await pool.query('SELECT COALESCE(SUM(balance),0) as total FROM users');
 
     return NextResponse.json({
-      totalMovies: movieCount[0].count,
       totalUsers: userCount[0].count,
       totalVipUsers: vipCount[0].count,
-      totalViews: viewCount[0].count || 0,
-      totalRevenue: revenue[0].total || 0,
-      totalBalance: (totalBalance[0].total || 0),
-      pendingTopups: (pendingTopups[0].total || 0),
+      totalRevenue: revenue[0].total,
+      totalBalance: totalBalance[0].total,
+      pendingTransactions: pendingCount[0].count,
       recentUsers
     });
   } catch (error) {
