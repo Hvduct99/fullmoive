@@ -36,7 +36,7 @@ export default function LoginPage() {
       if (data.user.role === 'admin' || data.user.role === 'moderator') {
         router.push('/admin');
       } else {
-        router.push('/user/dashboard');
+        router.push('/');
       }
       
       // Refresh router to update server components

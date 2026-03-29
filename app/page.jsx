@@ -2,52 +2,61 @@ import Section from '../components/Section';
 import HeroSlider from '../components/HeroSlider';
 import MovieMarquee from '../components/MovieMarquee';
 import AuthBanner, { AuthBottomCTA } from '../components/AuthBanner';
-import { getMoviesBySection } from '../lib/services';
+import UserSidebar from '../components/UserSidebar';
+import { getMoviesBySection, getVipMoviePool, mixMoviesWithVip } from '../lib/services';
 
-export const revalidate = 1800; // ISR cache - refresh every 30 minutes for fresher content
+export const revalidate = 1800;
 
 export default async function Home() {
-  // Fetch data sequentially to avoid OOM or timeout issues during build/runtime
-  // Group 1: Hero Slider & Featured
   const sliderData = await getMoviesBySection('featured');
   const featuredData = await getMoviesBySection('netflix');
-
-  // Group 2: Theatrical & Latest
   const theatricalData = await getMoviesBySection('theatrical');
   const latestData = await getMoviesBySection('latest');
-
-  // Group 3: Categories
   const actionHorrorData = await getMoviesBySection('section1');
   const animeRomanceData = await getMoviesBySection('section2');
-
-  // Marquee: dedicated fetch for more sci-fi & horror movies
   const marqueeMovies = await getMoviesBySection('marquee');
+
+  // Fetch VIP pool for mixing into non-VIP sections
+  const vipPool = await getVipMoviePool();
+
+  // Shuffle VIP pool into different slices for each section
+  const shuffled = [...vipPool].sort(() => 0.5 - Math.random());
+  const vipSlice1 = shuffled.slice(0, 4);
+  const vipSlice2 = shuffled.slice(4, 8);
+  const vipSlice3 = shuffled.slice(8, 12);
+
+  // Mix VIP movies into each section (7 free : 2 VIP ratio)
+  const theatricalMixed = mixMoviesWithVip(theatricalData.slice(0, 12), vipSlice1, 12);
+  const latestMixed = mixMoviesWithVip(latestData.slice(0, 12), vipSlice2, 12);
+  const animeMixed = mixMoviesWithVip(animeRomanceData.slice(0, 12), vipSlice3, 12);
+
+  // Netflix & Action/Horror sections are already VIP-heavy
+  const featuredMixed = featuredData.slice(0, 12);
+  const actionMixed = actionHorrorData.slice(0, 12);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Slider - Full Width */}
       <HeroSlider movies={sliderData} />
-
-      {/* Auth Banner - shows below hero for guests (client-side session check) */}
       <AuthBanner />
-
-      {/* Marquee - Sci-Fi & Horror scrolling */}
       <MovieMarquee movies={marqueeMovies} title="Kinh Dị & Khoa Học Viễn Tưởng Hot" />
 
-      <div className="container mx-auto px-2 md:px-4 space-y-8 md:space-y-12">
-        {/* Featured Section */}
-        <Section title="Phim Đề Cử (Netflix)" movies={featuredData.slice(0, 12)} link="/danh-sach/netflix" isVip={true} />
+      {/* Main layout: sidebar (logged in) + content */}
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="flex gap-6">
+          {/* User Sidebar - client component, shows only when logged in */}
+          <UserSidebar />
 
-        <Section title="Phim Chiếu Rạp" movies={theatricalData.slice(0, 12)} link="/danh-sach/phim-chieu-rap" />
-        
-        <Section title="Phim Mới Cập Nhật" movies={latestData.slice(0, 12)} link="/danh-sach/phim-moi" />
-        
-        <Section title="Hành Động & Kinh Dị" movies={actionHorrorData.slice(0, 12)} link="/the-loai/hanh-dong" isVip={true} />
-        
-        <Section title="Hoạt Hình & Tình Cảm" movies={animeRomanceData.slice(0, 12)} link="/the-loai/hoat-hinh" />
+          {/* Main Content */}
+          <div className="flex-1 min-w-0 space-y-8 md:space-y-12">
+            <Section title="Phim Đề Cử (Netflix)" movies={featuredMixed} link="/danh-sach/netflix" />
+            <Section title="Phim Chiếu Rạp" movies={theatricalMixed} link="/danh-sach/phim-chieu-rap" />
+            <Section title="Phim Mới Cập Nhật" movies={latestMixed} link="/danh-sach/phim-moi" />
+            <Section title="Hành Động & Kinh Dị" movies={actionMixed} link="/the-loai/hanh-dong" />
+            <Section title="Hoạt Hình & Tình Cảm" movies={animeMixed} link="/the-loai/hoat-hinh" />
+          </div>
+        </div>
       </div>
 
-      {/* Bottom CTA - large auth section at the end for guests */}
       <AuthBottomCTA />
     </div>
   );
