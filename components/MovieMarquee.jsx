@@ -62,11 +62,6 @@ const MovieMarquee = ({ movies, title }) => {
                     <span className="bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
                       {movie.year}
                     </span>
-                    {movie.isVip && (
-                      <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-[10px] font-bold px-1.5 py-0.5 rounded">
-                        VIP
-                      </span>
-                    )}
                   </div>
                 </div>
                 

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Crown, Clock, Shield, Eye, EyeOff, Save, Trash2, Lock, User, Mail, Phone, UserCircle, AlertTriangle } from 'lucide-react';
+import { Shield, Eye, EyeOff, Save, Trash2, Lock, User, Mail, Phone, UserCircle, AlertTriangle } from 'lucide-react';
 
 export default function UserProfile() {
   const [profile, setProfile] = useState(null);
@@ -179,31 +179,25 @@ export default function UserProfile() {
     { id: 'danger', label: 'Xóa tài khoản', icon: <Trash2 size={16} /> },
   ];
 
+  const isAdmin = profile.role === 'admin' || profile.role === 'moderator';
+
   return (
     <div className="space-y-6">
       {/* Profile Header */}
       <div className="bg-[#1a1a1a] rounded-xl border border-[#333] overflow-hidden">
-        <div className={`h-24 ${profile.isVip ? 'bg-gradient-to-r from-yellow-600/40 via-yellow-500/20 to-yellow-600/10' : 'bg-gradient-to-r from-blue-600/30 via-purple-600/20 to-blue-600/10'}`} />
+        <div className="h-24 bg-gradient-to-r from-blue-600/30 via-purple-600/20 to-blue-600/10" />
         <div className="px-6 pb-6 -mt-10 flex flex-col sm:flex-row items-start sm:items-end gap-4">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-4 border-[#1a1a1a] ${profile.isVip ? 'bg-gradient-to-br from-yellow-500 to-yellow-600 text-black' : 'bg-gray-700 text-white'}`}>
-            {profile.isVip ? <Crown size={32} /> : (profile.username || 'U')[0].toUpperCase()}
+          <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold border-4 border-[#1a1a1a] bg-gray-700 text-white">
+            {(profile.username || 'U')[0].toUpperCase()}
           </div>
           <div className="flex-1">
             <h2 className="text-xl font-bold text-white">{profile.username}</h2>
             <div className="flex items-center gap-3 mt-1">
-              <span className={`text-xs px-2.5 py-0.5 rounded-full font-semibold ${profile.isVip ? 'bg-yellow-500/20 text-yellow-500' : 'bg-gray-700 text-gray-400'}`}>
-                {profile.isVip ? <Crown size={10} className="inline mr-1" /> : <Shield size={10} className="inline mr-1" />}
-                {profile.membershipLabel}
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-gray-700 text-gray-400">
+                <Shield size={10} className="inline mr-1" />
+                {isAdmin ? 'Quản trị viên' : 'Thành viên'}
               </span>
               <span className="text-xs text-gray-400">Số dư: <strong className="text-white">{Number(profile.balance || 0).toLocaleString()} đ</strong></span>
-              {profile.isVip && profile.vipExpireAt && (
-                <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                  <Clock size={11} /> Hết hạn: {new Date(profile.vipExpireAt).toLocaleDateString('vi-VN')}
-                </span>
-              )}
-              {profile.isVip && !profile.vipExpireAt && (
-                <span className="text-[11px] text-yellow-500">VIP Vĩnh viễn</span>
-              )}
             </div>
           </div>
           <div className="text-xs text-gray-500">

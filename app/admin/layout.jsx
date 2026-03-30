@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }) {
     { icon: <Users size={20} />, label: 'Quản lý Users', href: '/admin/users' },
     { icon: <Film size={20} />, label: 'Quản lý Phim', href: '/admin/movies' },
     { icon: <MessageSquare size={20} />, label: 'Bình luận/Đánh giá', href: '/admin/comments' },
-    { icon: <CreditCard size={20} />, label: 'Giao dịch & VIP', href: '/admin/billing' },
+    { icon: <CreditCard size={20} />, label: 'Giao dịch', href: '/admin/billing' },
     { icon: <Settings size={20} />, label: 'Cấu hình hệ thống', href: '/admin/settings' },
   ];
 

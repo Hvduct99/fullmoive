@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession, deleteSession } from '@/lib/session';
-import { getUserVipState } from '@/lib/vip';
 import { verifyPassword, hashPassword } from '@/lib/password';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
@@ -12,14 +11,14 @@ export async function GET() {
   try {
     await ensureDatabaseSchema();
     const [users] = await pool.query(
-      'SELECT id, username, email, full_name, phone, avatar, role, COALESCE(status,"active") as status, created_at, vip_expire_at, COALESCE(balance,0) as balance FROM users WHERE id = ?',
+      'SELECT id, username, email, full_name, phone, avatar, role, COALESCE(status,"active") as status, created_at, COALESCE(balance,0) as balance FROM users WHERE id = ?',
       [session.userId]
     );
 
     if (users.length === 0) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
     const user = users[0];
-    const vipState = getUserVipState(user);
+    const isAdmin = user.role === 'admin' || user.role === 'moderator';
 
     return NextResponse.json({
       user: {
@@ -32,10 +31,7 @@ export async function GET() {
         role: user.role || 'member',
         created_at: user.created_at,
         balance: Number(user.balance || 0),
-        isVip: vipState.isVip,
-        vipExpired: vipState.vipExpired,
-        vipExpireAt: vipState.vipExpireAt,
-        membershipLabel: vipState.membershipLabel,
+        membershipLabel: isAdmin ? 'Quản trị viên' : 'Thành viên',
       },
       stats: { watchedMovies: 0 }
     });

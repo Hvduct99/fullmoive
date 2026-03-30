@@ -1,9 +1,5 @@
 import { getMovieDetail } from '../../../../lib/services';
-import { getSession } from '@/lib/session';
-import { isVipMovie, isUserVip } from '@/lib/vip';
-import pool from '@/lib/db';
 import MoviePlayerUI from '../../../../components/MoviePlayerUI';
-import VipGateServer from '../../../../components/VipGateServer';
 import Link from 'next/link';
 
 export const revalidate = 3600;
@@ -67,32 +63,6 @@ export default async function WatchPage({ params }) {
         </Link>
       </div>
     );
-  }
-
-  // Check VIP server-side
-  const movieIsVip = isVipMovie(movie);
-  if (movieIsVip) {
-    const session = await getSession();
-    let canWatch = false;
-
-    if (session?.userId) {
-      try {
-        const [users] = await pool.query('SELECT role, vip_expire_at FROM users WHERE id = ?', [session.userId]);
-        if (users.length > 0) {
-          canWatch = isUserVip(users[0]);
-        }
-      } catch (e) {
-        console.error('VIP check error:', e.message);
-      }
-    }
-
-    if (!canWatch) {
-      return (
-        <div className="container mx-auto px-4 py-12">
-          <VipGateServer />
-        </div>
-      );
-    }
   }
 
   return (

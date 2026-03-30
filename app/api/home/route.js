@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { withVipMeta } from '@/lib/vip';
 
 const API_BASE = process.env.API_BASE_URL || 'https://phimapi.com';
 
@@ -98,7 +97,7 @@ export async function GET(request) {
             const response = await axios.get(`${API_BASE}/danh-sach/phim-moi-cap-nhat?page=1`);
             if (response.data?.items) data = response.data.items.map(formatMovie);
         }
-        return NextResponse.json({ status: 'success', data: data.filter(m => m).map(withVipMeta) });
+        return NextResponse.json({ status: 'success', data: data.filter(m => m) });
     } catch (e) {
         console.error(e);
         return NextResponse.json({ status: 'error', data: [] });

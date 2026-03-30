@@ -2,13 +2,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from './LanguageContext';
-import { Crown } from 'lucide-react';
 
 const MovieCard = ({ movie }) => {
   const { lang } = useLanguage();
   const displayName = lang === 'en' ? (movie.origin_name || movie.name) : movie.name;
   const subName = lang === 'en' ? movie.name : (movie.origin_name || '');
-  const isVip = movie.isVip;
 
   return (
     <Link href={`/phim/${movie.slug}`} className="group block relative overflow-hidden rounded-lg bg-surface hover:shadow-xl transition-all duration-300">
@@ -33,14 +31,9 @@ const MovieCard = ({ movie }) => {
           <span className="bg-primary text-black text-xs font-bold px-2 py-1 rounded">
             {movie.year || '2024'}
           </span>
-          {isVip && (
-            <span className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-black text-[10px] font-bold px-1.5 py-1 rounded flex items-center gap-0.5">
-              <Crown size={10} /> VIP
-            </span>
-          )}
         </div>
       </div>
-      
+
       <div className="p-3">
         <h3 className="text-sm font-semibold truncate group-hover:text-primary transition-colors">{displayName}</h3>
         <p className="text-xs text-gray-500 truncate">{subName}</p>

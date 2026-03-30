@@ -5,7 +5,6 @@ import { Search, Loader2, Menu, X, ChevronDown, User, LogOut, Shield, LayoutDash
 import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from './LanguageContext';
 import { useRouter } from 'next/navigation';
-import VipBadge from './VipBadge';
 
 const Header = () => {
   const { lang, toggleLang, t } = useLanguage();
@@ -184,7 +183,6 @@ const Header = () => {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-semibold text-gray-200 line-clamp-1">{movie.name}</h4>
-                  {movie.isVip ? <VipBadge size="sm" /> : null}
                 </div>
                 <p className="text-xs text-gray-400 line-clamp-1">{movie.origin_name}</p>
                 <p className="text-xs text-primary mt-1">{movie.year}</p>

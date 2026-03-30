@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
-import { withVipMeta } from '@/lib/vip';
 
 const API_BASE = process.env.API_BASE_URL || 'https://phimapi.com';
 
@@ -27,7 +26,7 @@ export async function GET(request) {
     try {
         const response = await axios.get(`${API_BASE}/v1/api/tim-kiem?keyword=${encodeURIComponent(keyword)}&limit=20`);
         if (response.data?.data?.items) {
-            const data = response.data.data.items.map(formatMovie).map(withVipMeta);
+            const data = response.data.data.items.map(formatMovie);
             return NextResponse.json({ status: 'success', data });
         } else {
             return NextResponse.json({ status: 'success', data: [] });

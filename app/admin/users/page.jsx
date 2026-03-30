@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Ban, CheckCircle, Crown, X, UserX, UserCheck } from 'lucide-react';
+import { Search, Ban, CheckCircle, X, UserCheck } from 'lucide-react';
 
 export default function UsersManagement() {
   const [users, setUsers] = useState([]);
@@ -10,8 +10,6 @@ export default function UsersManagement() {
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('');
   const [loading, setLoading] = useState(true);
-  const [actionModal, setActionModal] = useState(null);
-  const [vipDays, setVipDays] = useState(30);
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -34,18 +32,18 @@ export default function UsersManagement() {
     return () => clearTimeout(timeout);
   }, [page, search, roleFilter]);
 
-  const handleAction = async (userId, action, days) => {
+  const handleAction = async (userId, action) => {
     setActionLoading(true);
     setMessage('');
     try {
       const res = await fetch('/api/admin/users', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, action, vipDays: days })
+        body: JSON.stringify({ userId, action })
       });
       const data = await res.json();
       setMessage(data.message || (res.ok ? 'Thành công' : 'Có lỗi'));
-      if (res.ok) { fetchUsers(); setActionModal(null); }
+      if (res.ok) fetchUsers();
     } catch { setMessage('Lỗi kết nối server'); }
     finally { setActionLoading(false); }
   };
@@ -62,7 +60,6 @@ export default function UsersManagement() {
           >
             <option value="">Tất cả role</option>
             <option value="admin">Admin</option>
-            <option value="vip">VIP</option>
             <option value="member">Member</option>
           </select>
           <div className="relative">
@@ -93,7 +90,6 @@ export default function UsersManagement() {
                 <th className="px-4 py-3">User</th>
                 <th className="px-4 py-3">Role</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-4 py-3">VIP Expiry</th>
                 <th className="px-4 py-3">Số dư</th>
                 <th className="px-4 py-3">Joined</th>
                 <th className="px-4 py-3">Actions</th>
@@ -101,17 +97,15 @@ export default function UsersManagement() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="7" className="text-center py-6">Đang tải...</td></tr>
+                <tr><td colSpan="6" className="text-center py-6">Đang tải...</td></tr>
               ) : users.length === 0 ? (
-                <tr><td colSpan="7" className="text-center py-6 text-gray-500">Không tìm thấy user nào</td></tr>
+                <tr><td colSpan="6" className="text-center py-6 text-gray-500">Không tìm thấy user nào</td></tr>
               ) : users.map(user => (
                 <tr key={user.id} className="border-b border-[#333] hover:bg-[#252525]">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${
-                        user.role === 'vip' ? 'bg-yellow-500 text-black' : 'bg-[#333] text-white'
-                      }`}>
-                        {user.role === 'vip' ? <Crown size={14} /> : (user.username || '?')[0].toUpperCase()}
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 bg-[#333] text-white">
+                        {(user.username || '?')[0].toUpperCase()}
                       </div>
                       <div className="min-w-0">
                         <div className="text-white font-medium truncate">{user.username}</div>
@@ -121,9 +115,7 @@ export default function UsersManagement() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`px-2 py-1 rounded text-xs font-bold ${
-                      user.role === 'admin' ? 'bg-red-900 text-red-200' :
-                      user.role === 'vip' ? 'bg-yellow-900 text-yellow-200' :
-                      'bg-gray-800 text-gray-200'
+                      user.role === 'admin' ? 'bg-red-900 text-red-200' : 'bg-gray-800 text-gray-200'
                     }`}>
                       {user.role.toUpperCase()}
                     </span>
@@ -136,34 +128,11 @@ export default function UsersManagement() {
                     )}
                   </td>
                   <td className="px-4 py-3">
-                    {user.role === 'vip' && user.vip_expire_at ? (
-                      <span className={`text-xs ${new Date(user.vip_expire_at) < new Date() ? 'text-red-400' : 'text-yellow-400'}`}>
-                        {new Date(user.vip_expire_at).toLocaleDateString('vi-VN')}
-                      </span>
-                    ) : user.role === 'vip' ? (
-                      <span className="text-xs text-yellow-400">Vĩnh viễn</span>
-                    ) : (
-                      <span className="text-gray-600">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
                     <span className="text-white font-semibold">{Number(user.balance || 0).toLocaleString()} đ</span>
                   </td>
                   <td className="px-4 py-3">{new Date(user.created_at).toLocaleDateString('vi-VN')}</td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
-                      {user.role !== 'admin' && user.role !== 'vip' && (
-                        <button onClick={() => setActionModal({ userId: user.id, username: user.username, action: 'grant_vip' })}
-                          className="p-1.5 rounded bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30" title="Cấp VIP">
-                          <Crown size={14} />
-                        </button>
-                      )}
-                      {user.role === 'vip' && (
-                        <button onClick={() => handleAction(user.id, 'revoke_vip')}
-                          className="p-1.5 rounded bg-gray-700 text-gray-300 hover:bg-gray-600" title="Thu hồi VIP">
-                          <UserX size={14} />
-                        </button>
-                      )}
                       {user.role !== 'admin' && user.status !== 'banned' && (
                         <button onClick={() => handleAction(user.id, 'ban')}
                           className="p-1.5 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30" title="Ban">
@@ -192,39 +161,6 @@ export default function UsersManagement() {
         <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
           className="px-3 py-1 bg-[#2a2a2a] text-white rounded disabled:opacity-50">Next</button>
       </div>
-
-      {actionModal?.action === 'grant_vip' && (
-        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={() => setActionModal(null)}>
-          <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 max-w-md w-full" onClick={e => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-              <Crown size={20} className="text-yellow-500" /> Cấp VIP cho {actionModal.username}
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-400 text-sm mb-2">Số ngày VIP</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[30, 90, 365].map(days => (
-                    <button key={days} onClick={() => setVipDays(days)}
-                      className={`py-2 rounded text-sm font-medium ${vipDays === days ? 'bg-yellow-500 text-black' : 'bg-[#333] text-gray-300 hover:bg-[#444]'}`}>
-                      {days === 30 ? '1 Tháng' : days === 90 ? '3 Tháng' : '1 Năm'}
-                    </button>
-                  ))}
-                </div>
-                <input type="number" min="1" value={vipDays} onChange={e => setVipDays(parseInt(e.target.value) || 1)}
-                  className="w-full mt-2 bg-[#252525] border border-[#333] rounded p-2 text-white text-sm focus:outline-none focus:border-yellow-500"
-                  placeholder="Số ngày tùy chỉnh" />
-              </div>
-              <div className="flex gap-3">
-                <button onClick={() => handleAction(actionModal.userId, 'grant_vip', vipDays)} disabled={actionLoading}
-                  className="flex-1 bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2.5 rounded disabled:opacity-50">
-                  {actionLoading ? 'Đang xử lý...' : `Cấp VIP ${vipDays} ngày`}
-                </button>
-                <button onClick={() => setActionModal(null)} className="px-4 py-2.5 bg-[#333] text-gray-300 rounded hover:bg-[#444]">Hủy</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

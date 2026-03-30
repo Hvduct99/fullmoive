@@ -34,7 +34,7 @@ export async function GET(request) {
     const where = conditions.length > 0 ? ' WHERE ' + conditions.join(' AND ') : '';
 
     const [users] = await pool.query(
-      `SELECT id, username, email, role, COALESCE(status,'active') as status, created_at, vip_expire_at, COALESCE(balance,0) as balance FROM users${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
+      `SELECT id, username, email, role, COALESCE(status,'active') as status, created_at, COALESCE(balance,0) as balance FROM users${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`,
       [...params, limit, offset]
     );
     const [totalResult] = await pool.query(
@@ -62,7 +62,7 @@ export async function PUT(request) {
 
   try {
     await ensureDatabaseSchema();
-    const { userId, action, vipDays } = await request.json();
+    const { userId, action } = await request.json();
 
     if (!userId || !action) {
       return NextResponse.json({ message: 'Missing userId or action' }, { status: 400 });
@@ -71,16 +71,6 @@ export async function PUT(request) {
       return NextResponse.json({ message: 'Không thể thay đổi tài khoản của chính mình' }, { status: 400 });
     }
 
-    if (action === 'grant_vip') {
-      const days = parseInt(vipDays) || 30;
-      const expireAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-      await pool.query('UPDATE users SET role = ?, vip_expire_at = ? WHERE id = ?', ['vip', expireAt, userId]);
-      return NextResponse.json({ message: `Đã cấp VIP ${days} ngày thành công` });
-    }
-    if (action === 'revoke_vip') {
-      await pool.query('UPDATE users SET role = ?, vip_expire_at = NULL WHERE id = ?', ['member', userId]);
-      return NextResponse.json({ message: 'Đã thu hồi VIP thành công' });
-    }
     if (action === 'ban') {
       await pool.query("UPDATE users SET status = 'banned' WHERE id = ?", [userId]);
       return NextResponse.json({ message: 'Đã ban user' });

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, Crown, DollarSign, Activity, Clock } from 'lucide-react';
+import { Users, DollarSign, Activity, Clock } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -19,8 +19,6 @@ export default function AdminDashboard() {
 
   const cards = [
     { title: 'Thành viên', value: stats.totalUsers, color: 'bg-purple-600', icon: <Users size={24} /> },
-    { title: 'Thành viên VIP', value: stats.totalVipUsers, color: 'bg-yellow-600', icon: <Crown size={24} /> },
-    { title: 'Doanh thu VIP', value: `${Number(stats.totalRevenue).toLocaleString()} đ`, color: 'bg-green-600', icon: <DollarSign size={24} /> },
     { title: 'Tổng số dư', value: `${Number(stats.totalBalance).toLocaleString()} đ`, color: 'bg-blue-600', icon: <DollarSign size={24} /> },
     { title: 'GD chờ duyệt', value: stats.pendingTransactions, color: 'bg-red-600', icon: <Clock size={24} /> },
   ];
@@ -29,7 +27,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-white">Tổng quan hệ thống</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {cards.map((card, i) => (
           <div key={i} className="bg-[#1a1a1a] p-5 rounded-lg border border-[#333]">
             <div className="flex justify-between items-start">
@@ -53,10 +51,8 @@ export default function AdminDashboard() {
           {stats.recentUsers?.map(user => (
             <div key={user.id} className="flex items-center justify-between border-b border-[#333] pb-3 last:border-0 last:pb-0">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ${
-                  user.role === 'vip' ? 'bg-yellow-500 text-black' : 'bg-[#333] text-gray-400'
-                }`}>
-                  {user.role === 'vip' ? <Crown size={16} /> : user.username.charAt(0).toUpperCase()}
+                <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-[#333] text-gray-400">
+                  {user.username.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <p className="text-white font-medium">{user.username}</p>
@@ -64,11 +60,9 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <span className={`text-xs px-2 py-1 rounded ${
-                user.status === 'banned' ? 'bg-red-900 text-red-200' :
-                user.role === 'vip' ? 'bg-yellow-900 text-yellow-200' :
-                'bg-green-900 text-green-200'
+                user.status === 'banned' ? 'bg-red-900 text-red-200' : 'bg-green-900 text-green-200'
               }`}>
-                {user.status === 'banned' ? 'Banned' : user.role === 'vip' ? 'VIP' : 'Active'}
+                {user.status === 'banned' ? 'Banned' : 'Active'}
               </span>
             </div>
           ))}

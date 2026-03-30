@@ -2,33 +2,12 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from './LanguageContext';
-import { useState, useEffect } from 'react';
-import { isVipMovie } from '@/lib/vip';
-import VipBadge from './VipBadge';
-import { Crown, Lock } from 'lucide-react';
 
 export default function MovieDetailInfo({ movie }) {
   const { lang, t } = useLanguage();
-  const [userSession, setUserSession] = useState(null);
-  const [sessionLoaded, setSessionLoaded] = useState(false);
-  
+
   const displayName = lang === 'en' ? (movie.origin_name || movie.name) : movie.name;
   const subName = lang === 'en' ? movie.name : (movie.origin_name || '');
-
-  const movieIsVip = isVipMovie(movie);
-
-  useEffect(() => {
-    fetch('/api/auth/session')
-      .then(res => res.json())
-      .then(data => {
-        setUserSession(data.user);
-        setSessionLoaded(true);
-      })
-      .catch(() => setSessionLoaded(true));
-  }, []);
-
-  const canWatch = !movieIsVip || Boolean(userSession?.isVip);
-  const isCheckingVip = movieIsVip && !sessionLoaded;
 
   return (
     <div className="bg-[#111] p-4 md:p-8 rounded-xl shadow-2xl">
@@ -37,8 +16,8 @@ export default function MovieDetailInfo({ movie }) {
         {/* Poster */}
         <div className="w-full md:w-1/3 lg:w-1/4 shrink-0">
           <div className="relative aspect-[2/3] rounded-lg overflow-hidden shadow-[0_0_20px_rgba(255,255,255,0.1)]">
-            <Image 
-               src={movie.poster_url || movie.thumb_url} 
+            <Image
+               src={movie.poster_url || movie.thumb_url}
                alt={movie.name}
                fill
                className="object-cover"
@@ -47,28 +26,12 @@ export default function MovieDetailInfo({ movie }) {
             />
           </div>
           {movie.episodes && movie.episodes.length > 0 && movie.episodes[0].server_data && movie.episodes[0].server_data.length > 0 ? (
-            isCheckingVip ? (
-              <button disabled className="block w-full text-center bg-gray-700 text-gray-300 font-bold py-3 mt-4 rounded cursor-wait">
-                Đang kiểm tra quyền xem...
-              </button>
-            ) : (
-            canWatch ? (
-              <Link 
-                href={`/phim/${movie.slug}/tap-${movie.episodes[0].server_data[0].slug}`} 
-                className="block w-full text-center bg-secondary hover:bg-red-700 text-white font-bold py-3 mt-4 rounded transition"
-              >
-                {t.watch_now}
-              </Link>
-            ) : (
-              <Link 
-                href="/user/dashboard" 
-                className="block w-full text-center bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-bold py-3 mt-4 rounded transition"
-              >
-                <Lock size={16} className="inline mr-2" />
-                Nâng cấp VIP để xem
-              </Link>
-            )
-            )
+            <Link
+              href={`/phim/${movie.slug}/tap-${movie.episodes[0].server_data[0].slug}`}
+              className="block w-full text-center bg-secondary hover:bg-red-700 text-white font-bold py-3 mt-4 rounded transition"
+            >
+              {t.watch_now}
+            </Link>
           ) : (
             <button disabled className="w-full bg-gray-600 text-gray-400 font-bold py-3 mt-4 rounded cursor-not-allowed">
               Coming Soon
@@ -80,21 +43,20 @@ export default function MovieDetailInfo({ movie }) {
         <div className="flex-1">
           <h1 className="text-3xl md:text-4xl font-bold text-primary mb-2">
             {displayName}
-            {movieIsVip && <VipBadge size="md" />}
           </h1>
           <h2 className="text-xl text-gray-400 mb-6">{subName} ({movie.year})</h2>
-          
+
           <div className="space-y-4 text-sm md:text-base text-gray-300">
             <div className="flex border-b border-gray-800 pb-2">
               <span className="w-32 font-bold text-gray-500">{t.status}:</span>
               <span className="text-white bg-gray-800 px-2 py-0.5 rounded text-xs leading-5">{movie.episode_current || 'Full'}</span>
             </div>
-            
+
             <div className="flex border-b border-gray-800 pb-2">
               <span className="w-32 font-bold text-gray-500">{t.duration}:</span>
               <span>{movie.time}</span>
             </div>
-            
+
             <div className="flex border-b border-gray-800 pb-2">
               <span className="w-32 font-bold text-gray-500">{t.quality}:</span>
               <span className="text-primary font-bold">{movie.quality}</span>
@@ -107,9 +69,9 @@ export default function MovieDetailInfo({ movie }) {
 
             <div className="py-4">
               <h3 className="text-lg font-bold text-white mb-2 border-l-4 border-primary pl-3">{t.content}</h3>
-              <div 
-                className="leading-relaxed text-gray-400" 
-                dangerouslySetInnerHTML={{ __html: movie.content }} 
+              <div
+                className="leading-relaxed text-gray-400"
+                dangerouslySetInnerHTML={{ __html: movie.content }}
               />
             </div>
           </div>
@@ -120,42 +82,18 @@ export default function MovieDetailInfo({ movie }) {
       {movie.episodes && movie.episodes.length > 0 && (
         <div className="mt-10">
            <h3 className="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-2">{t.episodes}</h3>
-           {!isCheckingVip && !canWatch && (
-            <div className="mb-4 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg flex items-center gap-3">
-              <Crown size={20} className="text-yellow-500 shrink-0" />
-              <p className="text-sm text-yellow-200">Phim này thuộc nội dung VIP. Nâng cấp VIP để xem tất cả tập phim.</p>
-            </div>
-           )}
            {movie.episodes.map((server, idx) => (
              <div key={idx} className="mb-6">
                 <h4 className="font-bold text-primary mb-3">{t.server}: {server.server_name}</h4>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                   {server.server_data.map((ep, i) => (
-                    isCheckingVip ? (
-                      <span 
-                        key={i}
-                        className="bg-gray-800/50 text-gray-500 text-center py-2 rounded text-sm cursor-wait"
-                      >
-                        ...
-                      </span>
-                    ) : (
-                    canWatch ? (
-                      <Link 
-                        key={i} 
-                        href={`/phim/${movie.slug}/tap-${ep.slug}`}
-                        className="bg-gray-800 hover:bg-primary hover:text-black text-center py-2 rounded transition text-sm"
-                      >
-                        {ep.name}
-                      </Link>
-                    ) : (
-                      <span 
-                        key={i}
-                        className="bg-gray-800/50 text-gray-600 text-center py-2 rounded text-sm cursor-not-allowed relative"
-                      >
-                        <Lock size={10} className="inline mr-1" />{ep.name}
-                      </span>
-                    )
-                    )
+                    <Link
+                      key={i}
+                      href={`/phim/${movie.slug}/tap-${ep.slug}`}
+                      className="bg-gray-800 hover:bg-primary hover:text-black text-center py-2 rounded transition text-sm"
+                    >
+                      {ep.name}
+                    </Link>
                   ))}
                 </div>
              </div>

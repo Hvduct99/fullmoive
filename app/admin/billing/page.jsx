@@ -43,7 +43,7 @@ export default function AdminBillingPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-white">Giao dịch & VIP</h2>
+        <h2 className="text-2xl font-bold text-white">Giao dịch</h2>
         <button onClick={fetchTransactions} className="flex items-center gap-2 px-3 py-1.5 bg-[#2a2a2a] rounded hover:bg-[#333] text-sm text-gray-300">
           <RefreshCcw size={14} /> Làm mới
         </button>
@@ -75,8 +75,8 @@ export default function AdminBillingPage() {
                 <td className="px-4 py-3">{tx.id}</td>
                 <td className="px-4 py-3 text-white font-medium">{tx.username}</td>
                 <td className="px-4 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded ${tx.type === 'deposit' ? 'bg-green-900 text-green-200' : 'bg-yellow-900 text-yellow-200'}`}>
-                    {tx.type === 'deposit' ? 'Nạp tiền' : 'Mua VIP'}
+                  <span className="text-xs px-2 py-0.5 rounded bg-green-900 text-green-200">
+                    {tx.type === 'deposit' ? 'Nạp tiền' : tx.type}
                   </span>
                 </td>
                 <td className="px-4 py-3 font-semibold">{Number(tx.amount).toLocaleString()} đ</td>
