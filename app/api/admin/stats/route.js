@@ -14,17 +14,21 @@ export async function GET() {
 
     const [userCount] = await pool.query('SELECT COUNT(*) as count FROM users');
     const [recentUsers] = await pool.query(
-      'SELECT id, username, role, status, created_at FROM users ORDER BY created_at DESC LIMIT 5'
+      "SELECT id, username, role, COALESCE(status,'active') as status, created_at FROM users ORDER BY created_at DESC LIMIT 5"
     );
     const [pendingCount] = await pool.query(
       "SELECT COUNT(*) as count FROM transactions WHERE status = 'pending'"
     );
     const [totalBalance] = await pool.query('SELECT COALESCE(SUM(balance),0) as total FROM users');
+    const [commentCount] = await pool.query('SELECT COUNT(*) as count FROM comments');
+    const [bannedCount] = await pool.query("SELECT COUNT(*) as count FROM users WHERE status = 'banned'");
 
     return NextResponse.json({
       totalUsers: userCount[0].count,
       totalBalance: totalBalance[0].total,
       pendingTransactions: pendingCount[0].count,
+      totalComments: commentCount[0].count,
+      bannedUsers: bannedCount[0].count,
       recentUsers
     });
   } catch (error) {

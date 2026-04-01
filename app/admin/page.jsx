@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Users, DollarSign, Activity, Clock } from 'lucide-react';
+import { Users, DollarSign, Activity, Clock, MessageSquare, Ban } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -19,7 +19,9 @@ export default function AdminDashboard() {
 
   const cards = [
     { title: 'Thành viên', value: stats.totalUsers, color: 'bg-purple-600', icon: <Users size={24} /> },
+    { title: 'Bình luận', value: stats.totalComments, color: 'bg-yellow-600', icon: <MessageSquare size={24} /> },
     { title: 'Tổng số dư', value: `${Number(stats.totalBalance).toLocaleString()} đ`, color: 'bg-blue-600', icon: <DollarSign size={24} /> },
+    { title: 'User bị ban', value: stats.bannedUsers, color: 'bg-orange-600', icon: <Ban size={24} /> },
     { title: 'GD chờ duyệt', value: stats.pendingTransactions, color: 'bg-red-600', icon: <Clock size={24} /> },
   ];
 
@@ -27,7 +29,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-white">Tổng quan hệ thống</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((card, i) => (
           <div key={i} className="bg-[#1a1a1a] p-5 rounded-lg border border-[#333]">
             <div className="flex justify-between items-start">
