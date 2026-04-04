@@ -1,8 +1,7 @@
-
 import { NextResponse } from 'next/server';
 import { deleteSession } from '@/lib/session';
 
-export async function POST(request) {
+export async function POST() {
   await deleteSession();
-  return NextResponse.redirect(new URL('/login', request.url));
+  return NextResponse.json({ message: 'Đã đăng xuất' });
 }

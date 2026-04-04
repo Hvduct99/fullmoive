@@ -1,7 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(! test:*)"
+      "Bash(! test:*)",
+      "Bash(xargs grep:*)",
+      "Bash(mysql -u root -e \"USE movie_db; SELECT id, username, email, role, status, created_at FROM users ORDER BY created_at DESC;\")",
+      "Bash(mysql -u root -p\"\" -e \"USE movie_db; SELECT id, username, email, role, status, created_at FROM users ORDER BY created_at DESC;\")",
+      "Bash(mysql -u root --password=\"\" movie_db -e \"SELECT id, username, email, role, status FROM users LIMIT 20;\")",
+      "Bash(node -e ':*)",
+      "Bash(mysql -u root -p\"root\" -e \"SELECT 1\")",
+      "Bash(mysql -u root -p\"123456\" -e \"SELECT 1\")",
+      "Bash(mysql -u root -p\"admin\" -e \"SELECT 1\")",
+      "Bash(mysql -u root -p\"password\" -e \"SELECT 1\")",
+      "Bash(mysql -u root -p\"1234\" -e \"SELECT 1\")",
+      "Bash(where mysql:*)",
+      "Bash(tasklist)",
+      "Bash(sc query:*)",
+      "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -e \"SELECT 1\")",
+      "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99*\" -e \"SELECT user, host, plugin FROM mysql.user;\")",
+      "Read(//c/xampp/mysql/bin/**)",
+      "Read(//c//**)",
+      "Bash(wmic process:*)",
+      "Bash(tasklist /FI \"IMAGENAME eq mysqld.exe\" /V)",
+      "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99*\" --protocol=tcp -e \"SELECT 1\")",
+      "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99\" -e \"SELECT 1\")",
+      "Read(//d/WORK CODE/full-Moive/**)"
     ]
   }
 }

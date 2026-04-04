@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { History, Play } from 'lucide-react';
 
 export default function UserDashboard() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
+  const [watchHistory, setWatchHistory] = useState([]);
   const [depositAmount, setDepositAmount] = useState(10000);
   const [transferNote, setTransferNote] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
@@ -14,12 +16,14 @@ export default function UserDashboard() {
 
   const fetchProfile = () => fetch('/api/user/profile').then(r => r.ok ? r.json() : null);
   const fetchTx = () => fetch('/api/user/transactions').then(r => r.ok ? r.json() : { transactions: [] });
+  const fetchHistory = () => fetch('/api/user/watch-history?limit=6').then(r => r.ok ? r.json() : { history: [] });
 
   useEffect(() => {
-    Promise.all([fetchProfile(), fetchTx()])
-      .then(([p, t]) => {
+    Promise.all([fetchProfile(), fetchTx(), fetchHistory()])
+      .then(([p, t, h]) => {
         setProfile(p);
         setTransactions(t?.transactions || []);
+        setWatchHistory(h?.history || []);
         if (p?.user) setTransferNote(p.user.username);
       })
       .catch(() => setProfile(null))
@@ -85,6 +89,51 @@ export default function UserDashboard() {
           <Link href="/user/profile" className="text-xs text-yellow-500 mt-2 block hover:underline">Chỉnh sửa hồ sơ &rarr;</Link>
         </div>
       </div>
+
+      {/* Watch History */}
+      {watchHistory.length > 0 && (
+        <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <History size={20} className="text-purple-400" /> Xem gần đây
+            </h3>
+            <Link href="/user/watch-history" className="text-xs text-yellow-500 hover:underline">
+              Xem tất cả &rarr;
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+            {watchHistory.map(item => (
+              <Link
+                key={item.id}
+                href={item.episode_slug ? `/phim/${item.movie_slug}/tap-${item.episode_slug}` : `/phim/${item.movie_slug}`}
+                className="group relative bg-[#222] rounded-lg overflow-hidden border border-[#333] hover:border-yellow-500/50 transition-all"
+              >
+                <div className="relative aspect-[2/3]">
+                  {item.movie_thumb ? (
+                    <img src={item.movie_thumb} alt={item.movie_name} className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gray-800 flex items-center justify-center">
+                      <Play size={24} className="text-gray-600" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Play size={28} className="text-white" />
+                  </div>
+                  {item.episode_name && (
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-2 py-1.5">
+                      <span className="text-[10px] text-yellow-400 font-semibold">Tập {item.episode_name}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-2">
+                  <p className="text-xs text-white font-medium line-clamp-2 leading-tight">{item.movie_name}</p>
+                  {item.movie_year && <p className="text-[10px] text-gray-500 mt-0.5">{item.movie_year}</p>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Deposit */}
       <div className="bg-[#1a1a1a] border border-[#333] rounded-xl p-6 space-y-4">

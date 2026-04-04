@@ -1,10 +1,36 @@
 'use client';
 import { useLanguage } from './LanguageContext';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import MovieComments from './MovieComments';
 
 export default function MoviePlayerUI({ movie, currentEpisode, episodeList, currentServer }) {
   const { lang, t } = useLanguage();
+
+  // Save watch history when user watches an episode
+  useEffect(() => {
+    if (!movie || !currentEpisode) return;
+    const saveHistory = async () => {
+      try {
+        await fetch('/api/user/watch-history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            movie_slug: movie.slug,
+            movie_name: movie.name,
+            movie_thumb: movie.poster_url || movie.thumb_url,
+            movie_year: movie.year?.toString(),
+            episode_slug: currentEpisode.slug,
+            episode_name: currentEpisode.name,
+          }),
+        });
+      } catch {
+        // Silently fail - user might not be logged in
+      }
+    };
+    saveHistory();
+  }, [movie?.slug, currentEpisode?.slug]);
 
   if (!movie || !currentEpisode) return <div className="text-center text-white p-10">{t.not_found}</div>;
 
@@ -69,11 +95,14 @@ export default function MoviePlayerUI({ movie, currentEpisode, episodeList, curr
         {/* Movie Info (Simplified) */}
         <div className="mt-8 pt-8 border-t border-gray-800">
              <h3 className="text-lg font-bold text-white mb-2">{t.content}</h3>
-             <div 
+             <div
                 className="text-gray-400 leading-relaxed text-sm"
-                dangerouslySetInnerHTML={{ __html: movie.content }} 
+                dangerouslySetInnerHTML={{ __html: movie.content }}
              />
         </div>
+
+        {/* Comments Section */}
+        <MovieComments movieSlug={movie.slug} movieName={displayName} />
     </div>
   );
 }

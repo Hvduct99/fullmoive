@@ -2,6 +2,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from './LanguageContext';
+import MovieComments from './MovieComments';
 
 export default function MovieDetailInfo({ movie }) {
   const { lang, t } = useLanguage();
@@ -100,6 +101,9 @@ export default function MovieDetailInfo({ movie }) {
            ))}
         </div>
       )}
+
+      {/* Comments Section */}
+      <MovieComments movieSlug={movie.slug} movieName={displayName} />
     </div>
   );
 }

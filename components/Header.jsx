@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Loader2, Menu, X, ChevronDown, User, LogOut, Shield, LayoutDashboard, UserCircle } from 'lucide-react';
+import { Search, Loader2, Menu, X, ChevronDown, User, LogOut, Shield, LayoutDashboard, UserCircle, History, MessageSquare } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from './LanguageContext';
 import { useRouter } from 'next/navigation';
@@ -153,6 +153,18 @@ const Header = () => {
     setShowMobileResults(false);
   };
 
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUserSession(null);
+      setIsUserMenuOpen(false);
+      router.push('/');
+      router.refresh();
+    } catch {
+      window.location.href = '/';
+    }
+  };
+
   const navLinks = [
     { href: '/', label: t.home, type: 'link' },
     { label: lang === 'vi' ? 'Thể Loại' : 'Genres', type: 'dropdown', items: genres },
@@ -210,40 +222,44 @@ const Header = () => {
           <div className="hidden md:flex items-center">
             {userSession ? (
               <div className="relative" ref={userMenuRef}>
-                <button 
+                <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-1.5 hover:bg-[#1a1a1a] py-1 px-2 rounded-full transition-colors"
+                  className="flex items-center gap-2 hover:bg-[#1a1a1a] py-1 px-2 rounded-full transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold text-sm">
                     {userSession.avatar ? (
                       <img src={userSession.avatar} alt="User" className="w-full h-full rounded-full object-cover" />
-                    ) : 'U'}
+                    ) : (userSession.username || 'U')[0].toUpperCase()}
                   </div>
+                  <span className="text-sm text-gray-200 font-medium hidden xl:inline max-w-[100px] truncate">{userSession.username}</span>
                   <ChevronDown size={14} className="text-gray-400" />
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl py-1 z-50">
-                    <div className="px-4 py-2 border-b border-[#333]">
-                      <p className="text-sm font-medium text-white">Tài khoản</p>
-                      <p className="text-xs text-gray-400 truncate">{userSession.membershipLabel || 'Member'}</p>
+                  <div className="absolute top-full left-0 mt-2 w-52 bg-[#1a1a1a] border border-[#333] rounded-lg shadow-xl py-1 z-50">
+                    <div className="px-4 py-3 border-b border-[#333]">
+                      <p className="text-sm font-semibold text-white">{userSession.username || 'Tài khoản'}</p>
+                      <p className="text-xs text-gray-400 truncate">{userSession.email || (userSession.role === 'admin' ? 'Admin' : 'Member')}</p>
                     </div>
                     {(userSession.role === 'admin' || userSession.role === 'moderator') && (
                       <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
-                        <Shield size={14} /> Trang Admin
+                        <Shield size={14} className="text-yellow-500" /> Trang Admin
                       </Link>
                     )}
                     <Link href="/user/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
-                      <LayoutDashboard size={14} /> Dashboard
+                      <LayoutDashboard size={14} className="text-blue-400" /> Dashboard
                     </Link>
                     <Link href="/user/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
-                      <UserCircle size={14} /> Hồ sơ cá nhân
+                      <UserCircle size={14} className="text-green-400" /> Hồ sơ cá nhân
                     </Link>
-                    <form action="/api/auth/logout" method="POST">
-                      <button type="submit" className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#333]">
+                    <Link href="/user/watch-history" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
+                      <History size={14} className="text-purple-400" /> Lịch sử xem phim
+                    </Link>
+                    <div className="border-t border-[#333] mt-1 pt-1">
+                      <button onClick={handleLogout} className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#333]">
                         <LogOut size={14} /> Đăng xuất
                       </button>
-                    </form>
+                    </div>
                   </div>
                 )}
               </div>
@@ -358,14 +374,14 @@ const Header = () => {
                 {userSession ? (
                   <div className="space-y-1">
                     <div className="flex items-center gap-3 pb-3 mb-2 border-b border-gray-800">
-                      <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold text-sm shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-yellow-500 flex items-center justify-center text-black font-bold text-base shrink-0">
                         {userSession.avatar ? (
                           <img src={userSession.avatar} alt="User" className="w-full h-full rounded-full object-cover" />
-                        ) : 'U'}
+                        ) : (userSession.username || 'U')[0].toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-white font-semibold text-sm">Tài khoản</p>
-                        <p className="text-xs text-gray-400">{userSession.membershipLabel || 'Member'}</p>
+                        <p className="text-white font-semibold text-sm">{userSession.username || 'Tài khoản'}</p>
+                        <p className="text-xs text-gray-400">{userSession.email || (userSession.role === 'admin' ? 'Admin' : 'Member')}</p>
                       </div>
                     </div>
                     {(userSession.role === 'admin' || userSession.role === 'moderator') && (
@@ -379,11 +395,14 @@ const Header = () => {
                     <Link href="/user/profile" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
                       <UserCircle size={16} className="text-green-400" /> Hồ sơ cá nhân
                     </Link>
-                    <form action="/api/auth/logout" method="POST" className="mt-1">
-                      <button type="submit" className="flex items-center gap-3 w-full px-2 py-2.5 text-sm text-red-400 hover:bg-gray-800 rounded-lg transition">
+                    <Link href="/user/watch-history" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
+                      <History size={16} className="text-purple-400" /> Lịch sử xem phim
+                    </Link>
+                    <div className="border-t border-gray-800 mt-1 pt-1">
+                      <button onClick={() => { closeMenu(); handleLogout(); }} className="flex items-center gap-3 w-full px-2 py-2.5 text-sm text-red-400 hover:bg-gray-800 rounded-lg transition">
                         <LogOut size={16} /> Đăng xuất
                       </button>
-                    </form>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
