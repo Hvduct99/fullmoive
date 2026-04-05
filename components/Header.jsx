@@ -27,19 +27,28 @@ const Header = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const res = await fetch('/api/auth/session');
+        const res = await fetch('/api/auth/session', { cache: 'no-store' });
+        if (!res.ok) { setUserSession(null); return; }
         const data = await res.json();
-        if (data.user) {
+        if (data.user && data.user.id) {
           setUserSession(data.user);
         } else {
           setUserSession(null);
         }
       } catch (err) {
-        // keep initial
+        console.error('Session check failed:', err);
+        setUserSession(null);
       }
     };
 
     checkSession();
+
+    // Re-check session when tab becomes visible again (e.g. after login in another tab)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') checkSession();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
   useEffect(() => {

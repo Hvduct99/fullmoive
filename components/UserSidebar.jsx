@@ -24,9 +24,9 @@ export default function UserSidebar() {
       .catch(() => setLoading(false));
   }, []);
 
-  // Don't render for guests, loading, login/register pages, or admin pages
+  // Don't render for guests, loading, login/register pages, admin pages, or user management pages
   if (loading || !user) return null;
-  if (pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/admin')) return null;
+  if (pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/admin') || pathname?.startsWith('/user')) return null;
 
   const isAdmin = user.role === 'admin' || user.role === 'moderator';
 
