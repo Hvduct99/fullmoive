@@ -33,7 +33,7 @@ export default function LoginPage() {
       if (data.user.role === 'admin' || data.user.role === 'moderator') {
         window.location.href = '/admin';
       } else {
-        window.location.href = '/';
+        window.location.href = '/user/dashboard';
       }
       
     } catch (err) {
