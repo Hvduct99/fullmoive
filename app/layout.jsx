@@ -1,7 +1,6 @@
 import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import UserSidebar from '../components/UserSidebar';
 import { LanguageProvider } from '../components/LanguageContext';
 
 export const metadata = {
@@ -21,12 +20,9 @@ export default function RootLayout({ children }) {
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
           <Header />
-          <div className="flex min-h-screen">
-            <UserSidebar />
-            <main className="flex-1 min-w-0">
-              {children}
-            </main>
-          </div>
+          <main className="min-h-screen">
+            {children}
+          </main>
           <Footer />
         </LanguageProvider>
       </body>
