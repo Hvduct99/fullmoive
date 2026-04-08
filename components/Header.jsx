@@ -165,13 +165,8 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
-      setUserSession(null);
-      setIsUserMenuOpen(false);
-      router.push('/');
-      router.refresh();
-    } catch {
-      window.location.href = '/';
-    }
+    } catch {}
+    window.location.href = '/';
   };
 
   const navLinks = [
