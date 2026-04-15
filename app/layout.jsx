@@ -2,6 +2,7 @@ import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AdOverlay from '../components/AdOverlay';
+import VideoAd from '../components/VideoAd';
 import MobileUserBar from '../components/MobileUserBar';
 import { LanguageProvider } from '../components/LanguageContext';
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
             {children}
           </main>
           <Footer />
+          <VideoAd />
           <MobileUserBar />
         </LanguageProvider>
       </body>
