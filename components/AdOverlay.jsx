@@ -1,46 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { X } from 'lucide-react';
 
-const AD_CONFIG = {
-  image: '/images/background-ad1.jpg',
-  link: 'https://meiduc.com',
-  cooldownMs: 30 * 60 * 1000, // 30 phút mới hiện lại
-};
+const AD_IMAGE = '/images/background-ad1.jpg';
+const AD_LINK = 'https://meiduc.com';
 
 export default function AdOverlay() {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    const lastClosed = localStorage.getItem('ad_closed_at');
-    if (lastClosed && Date.now() - Number(lastClosed) < AD_CONFIG.cooldownMs) return;
-    setShow(true);
-  }, []);
-
-  const close = (e) => {
-    e.stopPropagation();
-    localStorage.setItem('ad_closed_at', String(Date.now()));
-    setShow(false);
-  };
+  const [show, setShow] = useState(true);
 
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm" onClick={() => window.open(AD_CONFIG.link, '_blank')}>
-      <div className="relative max-w-[600px] w-[90vw] cursor-pointer">
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+      onClick={() => window.open(AD_LINK, '_blank')}
+    >
+      <div className="relative max-w-[520px] w-full cursor-pointer" onClick={(e) => e.stopPropagation()}>
         <button
-          onClick={close}
-          className="absolute -top-3 -right-3 z-10 w-8 h-8 bg-black/80 hover:bg-red-600 rounded-full flex items-center justify-center border border-gray-600 transition-colors"
-          aria-label="Đóng"
+          onClick={() => setShow(false)}
+          className="absolute -top-3 -right-3 z-10 w-8 h-8 bg-black hover:bg-red-600 rounded-full flex items-center justify-center border border-gray-600 transition-colors"
         >
           <X size={16} className="text-white" />
         </button>
-        <img
-          src={AD_CONFIG.image}
-          alt="Quảng cáo"
-          className="w-full rounded-xl shadow-2xl border border-gray-700"
-        />
+        <a href={AD_LINK} target="_blank" rel="noopener noreferrer">
+          <img src={AD_IMAGE} alt="" className="w-full rounded-xl shadow-2xl" />
+        </a>
       </div>
     </div>
   );

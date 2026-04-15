@@ -2,12 +2,19 @@ import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AdOverlay from '../components/AdOverlay';
+import MobileUserBar from '../components/MobileUserBar';
 import { LanguageProvider } from '../components/LanguageContext';
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
 
 export const metadata = {
   title: 'GenzMovie - Xem Phim Online',
   description: 'GenzMovie - Website xem phim online chất lượng cao, cập nhật nhanh nhất.',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
@@ -26,6 +33,7 @@ export default function RootLayout({ children }) {
             {children}
           </main>
           <Footer />
+          <MobileUserBar />
         </LanguageProvider>
       </body>
     </html>
