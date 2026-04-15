@@ -23,7 +23,8 @@
       "Bash(tasklist /FI \"IMAGENAME eq mysqld.exe\" /V)",
       "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99*\" --protocol=tcp -e \"SELECT 1\")",
       "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99\" -e \"SELECT 1\")",
-      "Read(//d/WORK CODE/full-Moive/**)"
+      "Read(//d/WORK CODE/full-Moive/**)",
+      "Read(//d/WORK CODE/full-Moive/app/phim/[slug/]/[episode/]/**)"
     ]
   }
 }
