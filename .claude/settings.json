@@ -24,7 +24,20 @@
       "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99*\" --protocol=tcp -e \"SELECT 1\")",
       "Bash(\"C:/Program Files/MySQL/MySQL Server 8.0/bin/mysql.exe\" -u root -p\"Hocvadop99\" -e \"SELECT 1\")",
       "Read(//d/WORK CODE/full-Moive/**)",
-      "Read(//d/WORK CODE/full-Moive/app/phim/[slug/]/[episode/]/**)"
+      "Read(//d/WORK CODE/full-Moive/app/phim/[slug/]/[episode/]/**)",
+      "Bash(winget install *)",
+      "Bash(export PATH=\"/c/ffmpeg/bin:$PATH:/c/Users/TSC/AppData/Local/Microsoft/WinGet/Links:$HOME/AppData/Local/Microsoft/WinGet/Links\")",
+      "Read(//c/Users/TSC/**)",
+      "Bash(dir \"C:\\\\Users\\\\TSC\\\\AppData\\\\Local\\\\Microsoft\\\\WinGet\\\\Packages\" /s /b)",
+      "Bash(findstr \"ffmpeg.exe\")",
+      "Read(//c/ProgramData/chocolatey/bin/**)",
+      "Read(//c/Program Files/ffmpeg/bin/**)",
+      "Read(//c/ffmpeg/bin/**)",
+      "Bash(/c/Users/TSC/AppData/Local/CapCut/Apps/8.2.0.3462/ffmpeg.exe -i 'd:/WORK CODE/full-Moive/public/videos/videoads1-Pic.mp4')",
+      "Bash(/c/Users/TSC/AppData/Local/CapCut/Apps/8.2.0.3462/ffmpeg.exe -y -i 'd:/WORK CODE/full-Moive/public/videos/videoads1-Pic.mp4' -vcodec libx264 -crf 32 -preset fast -vf scale=360:480 -an 'd:/WORK CODE/full-Moive/public/videos/videoads1-compressed.mp4')",
+      "Bash(npx --yes @nicolo-ribaudo/chokidar-cli@3.0.0 --version)",
+      "Bash(node -e ' *)",
+      "Bash(npx --yes ffmpeg-static)"
     ]
   }
 }
