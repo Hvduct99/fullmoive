@@ -1,7 +1,6 @@
 import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import AdOverlay from '../components/AdOverlay';
 import MobileUserBar from '../components/MobileUserBar';
 import { LanguageProvider } from '../components/LanguageContext';
 
@@ -40,7 +39,6 @@ export default function RootLayout({ children }) {
       </head>
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
-          <AdOverlay />
           <Header />
           <main className="min-h-screen">
             {children}
