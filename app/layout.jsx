@@ -25,6 +25,19 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="vi">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(s){s.dataset.zone='10654993',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`,
+          }}
+        />
+        <script
+          src="https://quge5.com/88/tag.min.js"
+          data-zone="214469"
+          async
+          data-cfasync="false"
+        />
+      </head>
       <body className="bg-black text-white font-sans antialiased overflow-x-hidden">
         <LanguageProvider>
           <AdOverlay />
