@@ -16,7 +16,7 @@ export default function AdOverlay() {
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
       onClick={() => window.open(AD_LINK, '_blank')}
     >
-      <div className="relative max-w-[520px] w-full cursor-pointer" onClick={(e) => e.stopPropagation()}>
+      <div className="relative max-w-[360px] w-full cursor-pointer" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={() => setShow(false)}
           className="absolute -top-3 -right-3 z-10 w-8 h-8 bg-black hover:bg-red-600 rounded-full flex items-center justify-center border border-gray-600 transition-colors"
