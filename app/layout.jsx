@@ -3,6 +3,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import AdOverlay from '../components/AdOverlay';
 import MobileUserBar from '../components/MobileUserBar';
+import ZaloFloatingButton from '../components/ZaloFloatingButton';
 import { LanguageProvider } from '../components/LanguageContext';
 
 export const viewport = {
@@ -34,6 +35,7 @@ export default function RootLayout({ children }) {
           </main>
           <Footer />
           <MobileUserBar />
+          <ZaloFloatingButton />
         </LanguageProvider>
       </body>
     </html>
