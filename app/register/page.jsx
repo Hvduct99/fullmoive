@@ -14,9 +14,7 @@ const initialForm = {
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [step, setStep] = useState(1);
   const [form, setForm] = useState(initialForm);
-  const [code, setCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -43,26 +41,6 @@ export default function RegisterPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Đăng ký thất bại');
-      setStep(2);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const submitCode = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-    try {
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: form.email, code }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Xác nhận thất bại');
       router.push('/login?registered=true');
     } catch (err) {
       setError(err.message);
@@ -84,53 +62,21 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {step === 1 ? (
-          <form onSubmit={submitInfo} className="space-y-4">
-            <Field label="Tên đăng nhập" type="text" value={form.username} onChange={update('username')} />
-            <Field label="Email" type="email" value={form.email} onChange={update('email')} />
-            <Field label="Số điện thoại" type="tel" value={form.phone} onChange={update('phone')} />
-            <Field label="Mật khẩu" type="password" value={form.password} onChange={update('password')} />
-            <Field
-              label="Nhập lại mật khẩu"
-              type="password"
-              value={form.confirmPassword}
-              onChange={update('confirmPassword')}
-            />
-            <SubmitButton loading={loading}>
-              {loading ? 'Đang gửi mã...' : 'Gửi mã xác nhận'}
-            </SubmitButton>
-          </form>
-        ) : (
-          <form onSubmit={submitCode} className="space-y-4">
-            <p className="text-sm text-gray-400">
-              Mã xác nhận đã được gửi đến{' '}
-              <span className="text-white">{form.email}</span>. Mã có hiệu lực 10 phút.
-            </p>
-            <Field
-              label="Mã xác nhận (6 chữ số)"
-              type="text"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              maxLength={6}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-            />
-            <SubmitButton loading={loading}>
-              {loading ? 'Đang xác nhận...' : 'Xác nhận đăng ký'}
-            </SubmitButton>
-            <button
-              type="button"
-              onClick={() => {
-                setError('');
-                setCode('');
-                setStep(1);
-              }}
-              className="block w-full text-sm text-gray-400 hover:text-yellow-400"
-            >
-              Quay lại sửa thông tin
-            </button>
-          </form>
-        )}
+        <form onSubmit={submitInfo} className="space-y-4">
+          <Field label="Tên đăng nhập" type="text" value={form.username} onChange={update('username')} />
+          <Field label="Email" type="email" value={form.email} onChange={update('email')} />
+          <Field label="Số điện thoại" type="tel" value={form.phone} onChange={update('phone')} />
+          <Field label="Mật khẩu" type="password" value={form.password} onChange={update('password')} />
+          <Field
+            label="Nhập lại mật khẩu"
+            type="password"
+            value={form.confirmPassword}
+            onChange={update('confirmPassword')}
+          />
+          <SubmitButton loading={loading}>
+            {loading ? 'Đang đăng ký...' : 'Đăng ký'}
+          </SubmitButton>
+        </form>
 
         <div className="mt-6 text-center text-sm text-gray-400">
           Đã có tài khoản?{' '}
