@@ -4,6 +4,8 @@ import pool from '@/lib/db';
 import { writeFile } from 'fs/promises';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });

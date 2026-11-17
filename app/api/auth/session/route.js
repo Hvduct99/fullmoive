@@ -1,41 +1,43 @@
-
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
-import pool from '@/lib/db';
+import { getSession, createSession, deleteSession } from '@/lib/session';
+import { getUserById } from '@/lib/wallet';
 
-export async function GET() {
+// Bắt buộc dynamic: route này phụ thuộc cookie của từng người dùng.
+export const dynamic = 'force-dynamic';
+
+const NO_STORE = { 'Cache-Control': 'private, no-store, max-age=0' };
+
+export async function GET(request) {
   const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ user: null });
-  }
+  if (!session) return NextResponse.json({ user: null }, { headers: NO_STORE });
 
+  let user;
   try {
-    const [users] = await pool.query(
-      'SELECT * FROM users WHERE id = ?',
-      [session.userId]
-    );
-
-    if (users.length === 0) {
-      return NextResponse.json({ user: null });
-    }
-
-    const user = users[0];
-
-    return NextResponse.json({
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar,
-      }
-    });
+    user = await getUserById(session.userId);
   } catch (error) {
-    return NextResponse.json({
-      user: {
-        id: session.userId,
-        role: session.role
-      }
-    });
+    // DB lỗi tạm thời: vẫn coi là đăng nhập dựa trên JWT hợp lệ
+    console.error('Session route DB error:', error.message);
+    return NextResponse.json({ user: { id: session.userId, role: session.role } }, { headers: NO_STORE });
   }
+
+  if (!user || user.status === 'banned') {
+    await deleteSession();
+    return NextResponse.json({ user: null }, { headers: NO_STORE });
+  }
+
+  // Phiên cũ chưa có mã thiết bị → cấp lại để hiện trong "Quản lý thiết bị"
+  if (!session.sid) {
+    await createSession(user.id, user.role, request);
+  }
+
+  return NextResponse.json({
+    user: {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      faction: user.faction === 'girlz' ? 'girlz' : 'boiz',
+    },
+  }, { headers: NO_STORE });
 }

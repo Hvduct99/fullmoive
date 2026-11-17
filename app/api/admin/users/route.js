@@ -4,6 +4,8 @@ import { getSession } from '@/lib/session';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
 import { hashPassword } from '@/lib/password';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'moderator')) {

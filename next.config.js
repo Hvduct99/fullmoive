@@ -19,6 +19,21 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Dữ liệu theo từng người dùng: cấm mọi tầng cache (trình duyệt, CDN Hostinger, proxy)
+  // lưu lại → tránh lỗi trang hiển thị sai trạng thái đăng nhập / dữ liệu của người khác.
+  async headers() {
+    const noStore = [{ key: 'Cache-Control', value: 'private, no-store, no-cache, max-age=0, must-revalidate' }];
+    return [
+      { source: '/api/auth/:path*', headers: noStore },
+      { source: '/api/user/:path*', headers: noStore },
+      { source: '/api/admin/:path*', headers: noStore },
+      { source: '/api/watch-party/:path*', headers: noStore },
+      { source: '/api/watch-party', headers: noStore },
+      { source: '/user/:path*', headers: noStore },
+      { source: '/admin/:path*', headers: noStore },
+      { source: '/admin', headers: noStore },
+    ];
+  },
 }
 
 module.exports = nextConfig

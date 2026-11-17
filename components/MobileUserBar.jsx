@@ -10,20 +10,21 @@ export default function MobileUserBar() {
   const pathname = usePathname();
 
   useEffect(() => {
-    fetch('/api/auth/session')
+    fetch('/api/auth/session', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => setLoggedIn(!!d.user))
       .catch(() => {});
-  }, []);
+  }, [pathname]);
 
   if (!loggedIn) return null;
-  if (pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/admin')) return null;
+  // /user/* đã có thanh điều hướng riêng (UserMobileNav) → tránh 2 thanh chồng nhau
+  if (pathname?.startsWith('/login') || pathname?.startsWith('/register') || pathname?.startsWith('/admin') || pathname?.startsWith('/user')) return null;
 
   const items = [
     { href: '/', icon: <Home size={20} />, label: 'Trang chủ' },
     { href: '/user/dashboard', icon: <LayoutDashboard size={20} />, label: 'Dashboard' },
     { href: '/user/profile', icon: <UserCircle size={20} />, label: 'Hồ sơ' },
-    { href: '/user/watch-history', icon: <History size={20} />, label: 'Lịch sử' },
+    { href: '/user/library?tab=history', icon: <History size={20} />, label: 'Lịch sử' },
   ];
 
   return (

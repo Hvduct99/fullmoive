@@ -29,12 +29,16 @@ export default function LoginPage() {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Full page reload to refresh session in all components (sidebar, header)
+      // Full page reload để header/sidebar đọc lại phiên mới.
+      // ?next= chỉ chấp nhận đường dẫn nội bộ (chống open-redirect).
+      const next = new URLSearchParams(window.location.search).get('next') || '';
+      const safeNext = next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/login') ? next : '';
       if (data.user.role === 'admin' || data.user.role === 'moderator') {
-        window.location.href = '/admin';
+        window.location.href = safeNext.startsWith('/admin') || safeNext.startsWith('/user') ? safeNext : '/admin';
       } else {
-        window.location.href = '/user/dashboard';
+        window.location.href = safeNext && !safeNext.startsWith('/admin') ? safeNext : '/user/dashboard';
       }
+      return;
       
     } catch (err) {
       setError(err.message);

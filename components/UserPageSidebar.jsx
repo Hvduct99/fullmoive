@@ -1,146 +1,98 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import {
-  User, LogOut, Shield, LayoutDashboard, UserCircle,
-  History, ChevronRight, Home, Settings, Camera
-} from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { LogOut, Shield, LayoutDashboard, UserCircle, Wallet, Library, Users, Settings, ChevronRight, Home, Plus } from 'lucide-react';
+import { useUser } from './user/UserContext';
+import { AvatarFrame, FactionBadge, EnergyBar } from './user/ui';
+import { getEnergy, getTier, formatVnd } from '@/lib/membership';
+
+export const USER_NAV = [
+  { href: '/user/dashboard', icon: LayoutDashboard, label: 'Tổng quan', short: 'Tổng quan' },
+  { href: '/user/wallet', icon: Wallet, label: 'Nạp Đạn / Ví Hội Viên', short: 'Ví' },
+  { href: '/user/library', icon: Library, label: 'Tủ Phim Cá Nhân', short: 'Tủ phim' },
+  { href: '/user/watch-party', icon: Users, label: 'Phòng Xem Chung', short: 'Xem chung' },
+  { href: '/user/settings', icon: Settings, label: 'Cài đặt hệ phái', short: 'Cài đặt' },
+];
+
+export function isNavActive(pathname, href) {
+  return pathname === href || pathname?.startsWith(href + '/');
+}
+
+export async function logout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } finally {
+    window.location.href = '/';
+  }
+}
 
 export default function UserPageSidebar() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, faction, now, openTopup } = useUser();
   const pathname = usePathname();
-  const router = useRouter();
-
-  useEffect(() => {
-    fetch('/api/auth/session', { cache: 'no-store' })
-      .then(res => res.json())
-      .then(data => {
-        setUser(data.user || null);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      window.location.href = '/';
-    } catch {
-      window.location.href = '/';
-    }
-  };
-
-  if (loading) {
-    return (
-      <aside className="hidden md:block w-[260px] shrink-0">
-        <div className="sticky top-20 space-y-3">
-          <div className="bg-[#1a1a1a] rounded-xl border border-[#333] p-6 animate-pulse">
-            <div className="w-16 h-16 rounded-full bg-gray-700 mx-auto" />
-            <div className="h-4 bg-gray-700 rounded mt-4 w-3/4 mx-auto" />
-            <div className="h-3 bg-gray-700 rounded mt-2 w-1/2 mx-auto" />
-          </div>
-        </div>
-      </aside>
-    );
-  }
-
-  if (!user) return null;
-
+  const t = now();
+  const energy = getEnergy(user, t);
+  const tier = getTier(user, t);
   const isAdmin = user.role === 'admin' || user.role === 'moderator';
 
-  const navItems = [
-    { href: '/user/dashboard', icon: <LayoutDashboard size={16} />, label: 'Dashboard', color: 'text-blue-400' },
-    { href: '/user/profile', icon: <UserCircle size={16} />, label: 'Hồ sơ cá nhân', color: 'text-green-400' },
-    { href: '/user/watch-history', icon: <History size={16} />, label: 'Lịch sử xem', color: 'text-purple-400' },
-  ];
+  const linkCls = (active) =>
+    `flex items-center justify-between px-3 py-2.5 text-sm rounded-lg transition ${
+      active
+        ? 'bg-[rgb(var(--fx-rgb)/0.12)] text-[var(--fx)] shadow-[inset_0_0_0_1px_rgb(var(--fx-rgb)/0.35)]'
+        : 'text-gray-400 hover:bg-white/5 hover:text-white'
+    }`;
 
   return (
     <aside className="hidden md:block w-[260px] shrink-0">
       <div className="sticky top-20 space-y-3">
-
-        {/* User Profile Card */}
-        <div className="bg-[#1a1a1a] rounded-xl border border-[#333] overflow-hidden">
-          <div className="h-20 bg-gradient-to-r from-yellow-600/30 via-orange-600/20 to-red-600/10" />
-          <div className="px-4 pb-5 -mt-10 text-center">
-            <div className="w-16 h-16 rounded-full flex items-center justify-center text-xl font-bold border-4 border-[#1a1a1a] bg-yellow-500 text-black mx-auto shadow-lg">
-              {user.avatar ? (
-                <img src={user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-              ) : (
-                <span>{(user.username || 'U')[0].toUpperCase()}</span>
-              )}
+        {/* Mini card */}
+        <div className="rounded-2xl border border-[rgb(var(--fx-rgb)/0.25)] bg-[#121217] p-4">
+          <div className="flex items-center gap-3">
+            <AvatarFrame user={user} size={52} level={tier.level} />
+            <div className="min-w-0">
+              <p className="text-white font-bold truncate">{user.username}</p>
+              <FactionBadge faction={faction} className="mt-1 !text-[9px] !px-1.5 !py-0.5" />
             </div>
-            <h3 className="text-white font-bold mt-3 text-base truncate">{user.username || 'Thành viên'}</h3>
-            <p className="text-xs text-gray-400 truncate mt-0.5">{user.email || ''}</p>
-            <span className={`text-[11px] inline-block mt-2 px-3 py-1 rounded-full font-semibold ${
-              isAdmin ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-gray-700/50 text-gray-400 border border-gray-600/30'
-            }`}>
-              {isAdmin ? 'Quản trị viên' : 'Thành viên'}
-            </span>
+          </div>
+          <div className="mt-3"><EnergyBar energy={energy} compact /></div>
+          <div className="mt-3 flex items-center justify-between rounded-lg bg-white/5 px-3 py-2">
+            <span className="text-xs text-gray-400">Ví: <b className="text-white tabular-nums">{formatVnd(user.balance)}</b></span>
+            <button onClick={() => openTopup('wallet')} className="text-xs font-bold text-[var(--fx)] flex items-center gap-0.5 hover:opacity-80"><Plus size={14} /> Bơm</button>
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="bg-[#1a1a1a] rounded-xl border border-[#333] overflow-hidden">
-          <div className="px-3 py-2.5 border-b border-[#292929]">
-            <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Quản lý tài khoản</span>
-          </div>
-          <nav className="py-1">
-            {navItems.map(item => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center justify-between px-3.5 py-2.5 text-sm transition-all mx-1 my-0.5 rounded-lg ${
-                    isActive
-                      ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
-                      : 'text-gray-400 hover:bg-[#252525] hover:text-white'
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <span className={isActive ? 'text-yellow-400' : item.color}>{item.icon}</span>
-                    {item.label}
-                  </span>
-                  <ChevronRight size={13} className={isActive ? 'text-yellow-500' : 'text-gray-600'} />
-                </Link>
-              );
-            })}
-
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="flex items-center justify-between px-3.5 py-2.5 text-sm text-gray-400 hover:bg-[#252525] hover:text-white transition-all mx-1 my-0.5 rounded-lg"
-              >
-                <span className="flex items-center gap-2.5">
-                  <Shield size={16} className="text-red-400" /> Trang Admin
-                </span>
-                <ChevronRight size={13} className="text-gray-600" />
+        <nav className="rounded-2xl border border-white/[0.07] bg-[#121217] p-1.5 space-y-0.5">
+          {USER_NAV.map(({ href, icon: Icon, label }) => {
+            const active = isNavActive(pathname, href);
+            return (
+              <Link key={href} href={href} className={linkCls(active)}>
+                <span className="flex items-center gap-2.5"><Icon size={16} /> {label}</span>
+                <ChevronRight size={13} className={active ? '' : 'text-gray-600'} />
               </Link>
-            )}
-          </nav>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="bg-[#1a1a1a] rounded-xl border border-[#333] overflow-hidden">
-          <Link
-            href="/"
-            className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-400 hover:bg-[#252525] hover:text-white transition-all"
-          >
-            <Home size={16} className="text-blue-400" /> Về trang chủ
+            );
+          })}
+          <div className="h-px bg-white/5 my-1" />
+          <Link href="/user/profile" className={linkCls(isNavActive(pathname, '/user/profile'))}>
+            <span className="flex items-center gap-2.5"><UserCircle size={16} /> Hồ sơ & mật khẩu</span>
+            <ChevronRight size={13} className="text-gray-600" />
           </Link>
-          <div className="border-t border-[#292929]">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-all"
-            >
-              <LogOut size={16} /> Đăng xuất
-            </button>
-          </div>
-        </div>
+          {isAdmin && (
+            <Link href="/admin" className={linkCls(false)}>
+              <span className="flex items-center gap-2.5"><Shield size={16} className="text-red-400" /> Trang Admin</span>
+              <ChevronRight size={13} className="text-gray-600" />
+            </Link>
+          )}
+        </nav>
 
+        <div className="rounded-2xl border border-white/[0.07] bg-[#121217] overflow-hidden">
+          <Link href="/" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-400 hover:bg-white/5 hover:text-white">
+            <Home size={16} /> Về trang chủ
+          </Link>
+          <button onClick={logout} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 border-t border-white/5">
+            <LogOut size={16} /> Đăng xuất
+          </button>
+        </div>
       </div>
     </aside>
   );

@@ -4,6 +4,8 @@ import pool from '@/lib/db';
 import { verifyPassword } from '@/lib/password';
 import { createSession } from '@/lib/session';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request) {
   try {
     const { email, password } = await request.json();
@@ -37,7 +39,7 @@ export async function POST(request) {
     }
 
     // Create session
-    await createSession(user.id, user.role);
+    await createSession(user.id, user.role, request);
 
     return NextResponse.json({ 
       message: 'Login successful',

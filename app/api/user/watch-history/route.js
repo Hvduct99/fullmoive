@@ -3,6 +3,8 @@ import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch user's watch history
 export async function GET(request) {
   const session = await getSession();
@@ -11,11 +13,15 @@ export async function GET(request) {
   try {
     await ensureDatabaseSchema();
     const { searchParams } = new URL(request.url);
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20') || 20, 1), 50);
+    // continue=1 → chỉ lấy phim đang xem dở (chưa xem xong)
+    const onlyUnfinished = searchParams.get('continue') === '1';
 
     const [history] = await pool.query(
-      `SELECT id, movie_slug, movie_name, movie_thumb, movie_year, episode_slug, episode_name, watched_at
-       FROM watch_history WHERE user_id = ? ORDER BY watched_at DESC LIMIT ?`,
+      `SELECT id, movie_slug, movie_name, movie_thumb, movie_year, episode_slug, episode_name,
+              progress, episode_index, episode_total, watched_at
+       FROM watch_history WHERE user_id = ? ${onlyUnfinished ? 'AND (progress IS NULL OR progress < 98)' : ''}
+       ORDER BY watched_at DESC LIMIT ?`,
       [session.userId, limit]
     );
 
@@ -33,23 +39,33 @@ export async function POST(request) {
 
   try {
     await ensureDatabaseSchema();
-    const { movie_slug, movie_name, movie_thumb, movie_year, episode_slug, episode_name } = await request.json();
+    const { movie_slug, movie_name, movie_thumb, movie_year, episode_slug, episode_name, progress, episode_index, episode_total } = await request.json();
 
     if (!movie_slug || !movie_name) {
       return NextResponse.json({ message: 'movie_slug và movie_name là bắt buộc' }, { status: 400 });
     }
 
-    // Upsert: if same movie exists, update the episode and timestamp
+    const toInt = (v) => (v === null || v === undefined || v === '' || !Number.isFinite(Number(v)) ? null : Math.round(Number(v)));
+    const prog = toInt(progress) === null ? null : Math.max(0, Math.min(100, toInt(progress)));
+    const epIdx = toInt(episode_index);
+    const epTotal = toInt(episode_total) || null;
+
+    // Upsert. Thứ tự gán quan trọng: progress phải tính TRƯỚC khi episode_slug bị ghi đè.
+    // Cùng tập → giữ tiến độ cao nhất; đổi tập → dùng tiến độ mới.
     await pool.query(
-      `INSERT INTO watch_history (user_id, movie_slug, movie_name, movie_thumb, movie_year, episode_slug, episode_name, watched_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+      `INSERT INTO watch_history (user_id, movie_slug, movie_name, movie_thumb, movie_year, episode_slug, episode_name, progress, episode_index, episode_total, watched_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
        ON DUPLICATE KEY UPDATE
+         progress = IF(VALUES(progress) IS NULL, progress,
+                       IF(episode_slug <=> VALUES(episode_slug), GREATEST(COALESCE(progress, 0), VALUES(progress)), VALUES(progress))),
+         episode_index = COALESCE(VALUES(episode_index), episode_index),
+         episode_total = COALESCE(VALUES(episode_total), episode_total),
          movie_name = VALUES(movie_name),
          movie_thumb = VALUES(movie_thumb),
          episode_slug = VALUES(episode_slug),
          episode_name = VALUES(episode_name),
          watched_at = NOW()`,
-      [session.userId, movie_slug, movie_name, movie_thumb || null, movie_year || null, episode_slug || null, episode_name || null]
+      [session.userId, movie_slug, movie_name, movie_thumb || null, movie_year || null, episode_slug || null, episode_name || null, prog, epIdx, epTotal]
     );
 
     return NextResponse.json({ message: 'Đã lưu lịch sử xem' });

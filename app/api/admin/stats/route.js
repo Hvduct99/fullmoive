@@ -3,6 +3,8 @@ import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const session = await getSession();
   if (!session || (session.role !== 'admin' && session.role !== 'moderator')) {

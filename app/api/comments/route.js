@@ -3,6 +3,8 @@ import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const movieSlug = searchParams.get('movie_slug');

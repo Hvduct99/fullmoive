@@ -2,38 +2,46 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
+import { createDeposit, walletErrorResponse } from '@/lib/wallet';
 
+export const dynamic = 'force-dynamic';
+
+// Tạo lệnh nạp tiền → trả về thông tin VietQR / MoMo / ZaloPay kèm mã nội dung CK
 export async function POST(request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   try {
+    const { amount, method } = await request.json();
+    const deposit = await createDeposit(session.userId, amount, method || 'vietqr');
+    return NextResponse.json({ deposit });
+  } catch (e) {
+    return walletErrorResponse(NextResponse, e, 'Lỗi tạo lệnh nạp tiền');
+  }
+}
+
+// Poll trạng thái lệnh nạp (client gọi mỗi 5 giây)
+export async function GET(request) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+
+  try {
     await ensureDatabaseSchema();
-    const { amount, note } = await request.json();
-    const parsedAmount = Number(amount);
+    const id = Number(new URL(request.url).searchParams.get('id'));
+    if (!id) return NextResponse.json({ message: 'Missing id' }, { status: 400 });
 
-    if (!parsedAmount || parsedAmount < 1000) {
-      return NextResponse.json({ message: 'Số tiền tối thiểu 1.000 đ' }, { status: 400 });
-    }
-    if (!note || !note.trim()) {
-      return NextResponse.json({ message: 'Nội dung chuyển khoản bắt buộc (tên đăng nhập)' }, { status: 400 });
-    }
-
-    const [userRows] = await pool.query('SELECT username FROM users WHERE id = ?', [session.userId]);
-    if (userRows.length === 0) return NextResponse.json({ message: 'User không tồn tại' }, { status: 404 });
-
-    if (note.trim() !== userRows[0].username) {
-      return NextResponse.json({ message: `Nội dung chuyển khoản phải đúng tên đăng nhập: "${userRows[0].username}"` }, { status: 400 });
-    }
-
-    await pool.query(
-      'INSERT INTO transactions (user_id, amount, type, status, note) VALUES (?, ?, ?, ?, ?)',
-      [session.userId, parsedAmount, 'deposit', 'pending', note.trim()]
+    const [rows] = await pool.query(
+      "SELECT id, amount, status FROM transactions WHERE id = ? AND user_id = ? AND type = 'deposit'",
+      [id, session.userId]
     );
+    if (!rows.length) return NextResponse.json({ message: 'Không tìm thấy' }, { status: 404 });
 
-    return NextResponse.json({ message: 'Yêu cầu nạp tiền đã ghi nhận. Vui lòng chờ admin xác nhận.' });
-  } catch (error) {
-    console.error('Deposit error:', error);
-    return NextResponse.json({ message: 'Lỗi ghi nhận nạp tiền' }, { status: 500 });
+    const [u] = await pool.query('SELECT balance FROM users WHERE id = ?', [session.userId]);
+    return NextResponse.json(
+      { status: rows[0].status, amount: Number(rows[0].amount), balance: Number(u[0]?.balance || 0) },
+      { headers: { 'Cache-Control': 'private, no-store, max-age=0' } }
+    );
+  } catch (e) {
+    return walletErrorResponse(NextResponse, e, 'Lỗi kiểm tra lệnh nạp');
   }
 }

@@ -2,30 +2,23 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession, deleteSession } from '@/lib/session';
 import { verifyPassword, hashPassword } from '@/lib/password';
+import { getUserById, publicUser } from '@/lib/wallet';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   try {
-    const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [session.userId]);
-    if (users.length === 0) return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    const u = await getUserById(session.userId);
+    if (!u) return NextResponse.json({ message: 'User not found' }, { status: 404 });
 
-    const u = users[0];
     return NextResponse.json({
-      user: {
-        id: u.id,
-        username: u.username || '',
-        email: u.email || '',
-        full_name: u.full_name || '',
-        phone: u.phone || '',
-        avatar: u.avatar || '',
-        role: u.role || 'user',
-        balance: Number(u.balance || 0),
-        created_at: u.created_at,
-      },
+      user: publicUser(u),
+      serverTime: new Date().toISOString(),
       stats: { watchedMovies: 0 }
-    });
+    }, { headers: { 'Cache-Control': 'private, no-store, max-age=0' } });
   } catch (error) {
     console.error('Fetch profile error:', error);
     return NextResponse.json({ message: 'Error fetching profile' }, { status: 500 });

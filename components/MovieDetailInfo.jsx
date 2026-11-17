@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from './LanguageContext';
 import MovieComments from './MovieComments';
+import LibraryButtons from './LibraryButtons';
 
 export default function MovieDetailInfo({ movie }) {
   const { lang, t } = useLanguage();
@@ -38,6 +39,7 @@ export default function MovieDetailInfo({ movie }) {
               Coming Soon
             </button>
           )}
+          <LibraryButtons movie={movie} />
         </div>
 
         {/* Info */}
