@@ -18,7 +18,7 @@ export async function generateMetadata({ params }) {
 
 export default async function GenrePage({ params, searchParams }) {
   const page = searchParams?.page ? parseInt(searchParams.page) : 1;
-  const { movies, title, pagination } = await getMoviesByGenre(params.slug, page);
+  const { movies, title, totalPages } = await getMoviesByGenre(params.slug, page);
 
   if (!movies || movies.length === 0) {
       if(page === 1) return notFound(); // Only 404 on first page empty
@@ -49,6 +49,7 @@ export default async function GenrePage({ params, searchParams }) {
         currentPage={page}
         basePath={`/the-loai/${params.slug}`}
         totalItems={movies.length}
+        totalPages={totalPages}
       />
     </div>
   );

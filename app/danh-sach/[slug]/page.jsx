@@ -17,7 +17,7 @@ export async function generateMetadata({ params }) {
 
 export default async function ListPage({ params, searchParams }) {
   const page = searchParams?.page ? parseInt(searchParams.page) : 1;
-  const { movies, title, pagination } = await getMoviesByList(params.slug, page);
+  const { movies, title, totalPages } = await getMoviesByList(params.slug, page);
 
   if (!movies || movies.length === 0) {
      if(page === 1 && params.slug !== 'netflix') return notFound();
@@ -48,6 +48,7 @@ export default async function ListPage({ params, searchParams }) {
         currentPage={page}
         basePath={`/danh-sach/${params.slug}`}
         totalItems={movies.length}
+        totalPages={totalPages}
       />
     </div>
   );

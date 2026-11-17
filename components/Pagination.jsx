@@ -1,79 +1,55 @@
 // components/Pagination.jsx
 import Link from 'next/link';
 
-const Pagination = ({ currentPage, basePath, totalItems, itemsPerPage = 24 }) => {
-  // If API logic doesn't return totalPage, we assume "Next" is possible if full page
-  // But user wants "Previous 1 2 3 4 5 Next" style if possible
-  
-  // Since we rely on external API that might return total, let's use a window approach
-  // Assuming total pages is unknown or we just show a window around current page
-  
+/**
+ * totalPages (nếu có) quyết định chính xác có trang sau hay không.
+ * Không có totalPages → đoán theo "trang đầy" như trước.
+ */
+const Pagination = ({ currentPage, basePath, totalItems, itemsPerPage = 24, totalPages }) => {
   const page = currentPage;
-  const hasNext = (itemsPerPage && totalItems === itemsPerPage); // If full page, likely has next
+  const known = Number.isFinite(totalPages) && totalPages > 0;
+  const hasNext = known ? page < totalPages : totalItems === itemsPerPage;
+  const last = known ? totalPages : page + (hasNext ? 2 : 0);
 
-  // Generate range of pages to show
-  const getPageNumbers = () => {
-    const pages = [];
-    // Show current page and surrounding pages (e.g. current - 2, current - 1, current, current + 1, current + 2)
-    // But ensure we start at 1
-    let start = Math.max(1, page - 2);
-    let end = start + 4; // Show 5 pages
-    
-    // Adjust logic if near start
-    if (start === 1) {
-        end = 5;
-    }
-    
-    for (let i = start; i <= end; i++) {
-        // We don't know the max limit easily without API return, so we might optimistically show next few
-        // If current page is high, we assume these pages exist
-        // But better to only show Next if we know
-        if (i <= page) pages.push(i);
-        // Only add forward pages if we suspect there are more? 
-        // Or just let user click?
-        // User asked for "preview 1 2 3 4 5 next"
-        // Let's implement a standard window
-        if (i > page) pages.push(i);
-    }
-    return pages;
-  };
-  
-  const pageNumbers = getPageNumbers();
+  let start = Math.max(1, page - 2);
+  let end = Math.min(last, start + 4);
+  start = Math.max(1, Math.min(start, end - 4));
+  const pageNumbers = [];
+  for (let i = start; i <= end; i++) pageNumbers.push(i);
+
+  if (pageNumbers.length <= 1 && !hasNext && page === 1) return null;
 
   return (
     <div className="mt-12 flex justify-center items-center gap-2 flex-wrap">
-      {/* Previous Button */}
       {page > 1 && (
-        <Link 
-            href={`${basePath}?page=${page - 1}`}
-            className="px-3 py-2 bg-gray-800 hover:bg-primary hover:text-black rounded transition text-sm font-medium"
+        <Link
+          href={`${basePath}?page=${page - 1}`}
+          className="px-3 py-2 bg-gray-800 hover:bg-primary hover:text-black rounded transition text-sm font-medium"
         >
-            Previous
+          Previous
         </Link>
       )}
 
-      {/* Numbered Pages */}
       {pageNumbers.map((num) => (
         <Link
-            key={num}
-            href={`${basePath}?page=${num}`}
-            className={`px-3 py-2 rounded transition text-sm font-bold ${
-                page === num 
-                ? 'bg-primary text-black' 
-                : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
-            }`}
+          key={num}
+          href={`${basePath}?page=${num}`}
+          className={`px-3 py-2 rounded transition text-sm font-bold ${
+            page === num
+              ? 'bg-primary text-black'
+              : 'bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white'
+          }`}
         >
-            {num}
+          {num}
         </Link>
       ))}
 
-      {/* Next Button */}
       {hasNext && (
-        <Link 
-            href={`${basePath}?page=${page + 1}`}
-            className="px-3 py-2 bg-gray-800 hover:bg-primary hover:text-black rounded transition text-sm font-medium"
+        <Link
+          href={`${basePath}?page=${page + 1}`}
+          className="px-3 py-2 bg-gray-800 hover:bg-primary hover:text-black rounded transition text-sm font-medium"
         >
-            Next
+          Next
         </Link>
       )}
     </div>
