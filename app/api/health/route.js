@@ -28,6 +28,19 @@ export async function GET() {
     time: new Date().toISOString(),
   };
 
+  // Tình trạng cập nhật database (công khai: chỉ tên bảng/cột + mã lỗi, không có dữ liệu hay thông tin đăng nhập)
+  try {
+    await ensureDatabaseSchema();
+  } catch { /* bỏ qua */ }
+  out.schema = {
+    ranAt: schemaStatus.ranAt,
+    runs: schemaStatus.runs || 0,
+    usersIdType: schemaStatus.userIdType,
+    missingColumns: schemaStatus.missingColumns || [],
+    errors: (schemaStatus.errors || []).map((e) => ({ step: e.step, code: e.code })),
+    lastRuntimeError: schemaStatus.lastRuntimeError ? { code: schemaStatus.lastRuntimeError.code, at: schemaStatus.lastRuntimeError.at } : null,
+  };
+
   const session = await getSession();
   if (!session) return NextResponse.json(out, { headers: { 'Cache-Control': 'no-store' } });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { buyPassWithBalance, walletErrorResponse } from '@/lib/wallet';
+import { withSchemaRetry } from '@/lib/dbUtils';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +12,7 @@ export async function POST(request) {
 
   try {
     const { planId } = await request.json();
-    const user = await buyPassWithBalance(session.userId, planId);
+    const user = await withSchemaRetry(() => buyPassWithBalance(session.userId, planId));
     return NextResponse.json({ message: 'Kích hoạt thành công! Năng lượng đã được nạp đầy ⚡', user });
   } catch (e) {
     return walletErrorResponse(NextResponse, e, 'Lỗi kích hoạt gói');
