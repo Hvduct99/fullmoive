@@ -151,7 +151,7 @@ export default function WatchPartyPage() {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-center text-xl tracking-[0.4em] font-black text-white placeholder:text-gray-700 placeholder:tracking-normal placeholder:text-sm placeholder:font-normal focus:outline-none focus:border-[var(--fx)]" />
             <button className="w-full py-3 rounded-xl font-bold border border-[var(--fx)] text-[var(--fx)] hover:bg-[rgb(var(--fx-rgb)/0.1)]">Vào phòng</button>
           </form>
-          <p className="text-[11px] text-gray-500 mt-3">Chủ phòng bấm đếm ngược → cả hội cùng bấm Play một lúc. Chat trực tiếp ngay trong phòng.</p>
+          <p className="text-[11px] text-gray-500 mt-3">Play, pause, tua được đồng bộ realtime cho cả phòng, vào trễ vẫn xem đúng đoạn đang chiếu. Chat trực tiếp ngay trong phòng.</p>
         </Panel>
       </div>
 

@@ -47,6 +47,9 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
   const [pendingPlan, setPendingPlan] = useState(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+  const [needPhone, setNeedPhone] = useState(!user?.phone);
+  const [qrFailed, setQrFailed] = useState(false);
   const [doneMsg, setDoneMsg] = useState('');
   const [countdown, setCountdown] = useState(POLL_MS / 1000);
   const finishingRef = useRef(false);
@@ -90,10 +93,17 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
       const res = await fetch('/api/user/deposit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: value, method }),
+        body: JSON.stringify({ amount: value, method, phone: needPhone ? phoneInput : undefined }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.message || 'Không tạo được lệnh nạp');
+      if (!res.ok) {
+        if (data.code === 'PHONE_REQUIRED' || data.code === 'PHONE_TAKEN') setNeedPhone(true);
+        throw new Error(data.message || 'Không tạo được lệnh nạp');
+      }
+      // SĐT vừa lưu làm nội dung chuyển khoản → cập nhật vào hồ sơ đang hiển thị
+      if (data.deposit?.code && data.deposit.code !== user?.phone) setUser((u) => ({ ...u, phone: data.deposit.code }));
+      setNeedPhone(false);
+      setQrFailed(false);
       setDeposit(data.deposit);
       setPendingPlan(planToBuy);
       setCountdown(POLL_MS / 1000);
@@ -287,6 +297,16 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
                 )}
               </div>
 
+              {needPhone && (tab === 'wallet' || shortfall > 0) && (
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Số điện thoại của bạn (dùng làm nội dung chuyển khoản)</p>
+                  <input inputMode="tel" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value.replace(/[^\d+\s.]/g, '').slice(0, 15))}
+                    placeholder="VD: 0968635701"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-[var(--fx)]" />
+                  <p className="text-[11px] text-gray-500 mt-1">Hệ thống nhận diện tiền của bạn qua SĐT này. Chỉ cần nhập một lần.</p>
+                </div>
+              )}
+
               {error && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{error}</p>}
 
               <button disabled={busy} onClick={tab === 'pass' ? handlePassCta : () => startDeposit(walletAmount)}
@@ -309,15 +329,15 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
               <div className="flex flex-col sm:flex-row gap-5 items-center">
                 <div className="shrink-0 bg-white rounded-2xl p-2 shadow-[0_0_40px_-8px_rgb(var(--fx-rgb)/0.8)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={deposit.qrUrl} alt="Mã VietQR" className="w-56 h-56 object-contain" />
+                  <img src={qrFailed ? deposit.staticQrUrl : deposit.qrUrl} alt="Mã VietQR VietinBank" onError={() => setQrFailed(true)} className={qrFailed ? 'w-56 h-auto object-contain' : 'w-56 h-56 object-contain'} />
                 </div>
                 <div className="flex-1 w-full space-y-2">
                   {deposit.method !== 'vietqr' && (
                     <p className="text-xs text-gray-400">Mở app <b className="text-white">{methodInfo?.label}</b> → <b className="text-white">Quét mã QR</b> bên cạnh (chuyển tới ngân hàng).</p>
                   )}
-                  <CopyField label="Nội dung chuyển khoản (bắt buộc)" value={deposit.code} />
+                  <CopyField label="Nội dung chuyển khoản (SĐT của bạn — bắt buộc)" value={deposit.code} />
                   <CopyField label="Số tiền" value={deposit.amount} />
-                  {deposit.dynamicQr && <CopyField label={`Số tài khoản · ${deposit.bank}`} value={deposit.accountNo} />}
+                  <CopyField label={`Số tài khoản · ${deposit.bank}`} value={deposit.accountNo} />
                   {deposit.accountName && <CopyField label="Chủ tài khoản" value={deposit.accountName} />}
                   {deposit.phone && <CopyField label={`Hoặc chuyển tới số ví ${methodInfo?.label}`} value={deposit.phone} />}
                 </div>

@@ -12,8 +12,8 @@ export async function POST(request) {
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { amount, method } = await request.json();
-    const deposit = await createDeposit(session.userId, amount, method || 'vietqr');
+    const { amount, method, phone } = await request.json();
+    const deposit = await createDeposit(session.userId, amount, method || 'vietqr', phone);
     return NextResponse.json({ deposit });
   } catch (e) {
     return walletErrorResponse(NextResponse, e, 'Lỗi tạo lệnh nạp tiền');

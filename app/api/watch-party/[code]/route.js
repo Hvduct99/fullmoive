@@ -65,7 +65,7 @@ export async function GET(request, { params }) {
   }
 }
 
-// action: join | leave | message | start | close
+// action: join | leave | message | start | episode | close
 export async function POST(request, { params }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
@@ -98,8 +98,8 @@ export async function POST(request, { params }) {
       if (!text) return NextResponse.json({ message: 'Tin nhắn trống' }, { status: 400 });
       const [m] = await pool.query('SELECT 1 FROM watch_party_members WHERE party_id = ? AND user_id = ?', [party.id, session.userId]);
       if (!m.length) return NextResponse.json({ message: 'Vào phòng trước đã' }, { status: 403 });
-      await pool.query('INSERT INTO watch_party_messages (party_id, user_id, content) VALUES (?, ?, ?)', [party.id, session.userId, text]);
-      return NextResponse.json({ message: 'ok' });
+      const [ins] = await pool.query('INSERT INTO watch_party_messages (party_id, user_id, content) VALUES (?, ?, ?)', [party.id, session.userId, text]);
+      return NextResponse.json({ message: 'ok', id: ins.insertId, content: text });
     }
 
     if (action === 'start') {
@@ -110,6 +110,14 @@ export async function POST(request, { params }) {
         [startsAt, episode_slug ? String(episode_slug).slice(0, 255) : null, party.id]
       );
       return NextResponse.json({ message: 'Đếm ngược bắt đầu!', starts_at: startsAt.toISOString() });
+    }
+
+    // Lưu tập đang chiếu (để danh sách phòng & người vào sau biết tập nào)
+    if (action === 'episode') {
+      if (!isHost) return NextResponse.json({ message: 'Chỉ chủ phòng mới đổi được tập' }, { status: 403 });
+      if (!episode_slug) return NextResponse.json({ message: 'Thiếu tập' }, { status: 400 });
+      await pool.query('UPDATE watch_parties SET episode_slug = ? WHERE id = ?', [String(episode_slug).slice(0, 255), party.id]);
+      return NextResponse.json({ message: 'ok' });
     }
 
     if (action === 'close') {

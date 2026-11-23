@@ -36,7 +36,8 @@ jobs:
           port: ${{ secrets.HOSTINGER_PORT || 65002 }}
           script: |
             cd ~/domains/${{ secrets.HOSTINGER_DOMAIN }}/
+            # package-lock.json giờ đã nằm trong repo → bỏ bản cũ (không được git theo dõi) để pull không bị chặn
+            rm -f package-lock.json
             git pull origin main
-            npm ci --production
-            npm run build
-            pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
+            # Cần cả devDependencies (tailwindcss, postcss) để build; dừng ngay nếu bước nào lỗi
+            npm ci && npm run build && pm2 startOrRestart ecosystem.config.js && pm2 save
