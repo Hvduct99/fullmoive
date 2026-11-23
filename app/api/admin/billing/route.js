@@ -15,7 +15,7 @@ export async function GET() {
   try {
     await ensureDatabaseSchema();
     const [transactions] = await pool.query(
-      `SELECT t.id, t.user_id, u.username, t.amount, t.type, t.status, t.note, t.created_at
+      `SELECT t.id, t.user_id, u.username, u.phone, t.amount, t.type, t.status, t.note, t.method, t.user_confirmed_at, t.created_at
        FROM transactions t JOIN users u ON t.user_id = u.id
        ORDER BY t.created_at DESC LIMIT 200`
     );

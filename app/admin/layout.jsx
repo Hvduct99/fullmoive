@@ -1,6 +1,7 @@
 
 import Link from 'next/link';
 import { getSession } from '@/lib/session';
+import AdminNotifyBell from '@/components/AdminNotifyBell';
 import { redirect } from 'next/navigation';
 import { 
   rxDashboard, 
@@ -62,9 +63,10 @@ export default async function AdminLayout({ children }) {
 
       {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <header className="bg-[#1a1a1a] h-16 border-b border-[#333] flex items-center justify-between px-8 md:hidden">
-           <h1 className="text-xl font-bold text-yellow-500">Admin</h1>
-           {/* Mobile menu toggle would go here */}
+        <header className="bg-[#1a1a1a] h-16 border-b border-[#333] flex items-center justify-between px-4 md:px-8">
+           <h1 className="text-xl font-bold text-yellow-500 md:invisible">Admin</h1>
+           {/* Chuông báo đơn nạp tiền mới / người dùng báo đã chuyển khoản */}
+           <AdminNotifyBell />
         </header>
         <div className="p-8">
           {children}

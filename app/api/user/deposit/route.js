@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { getSession } from '@/lib/session';
 import { ensureDatabaseSchema } from '@/lib/dbUtils';
-import { createDeposit, walletErrorResponse } from '@/lib/wallet';
+import { createDeposit, confirmTransfer, walletErrorResponse } from '@/lib/wallet';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,12 @@ export async function POST(request) {
   if (!session) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
 
   try {
-    const { amount, method, phone } = await request.json();
+    const { amount, method, phone, action, id } = await request.json();
+    // Người nạp bấm "Tôi đã chuyển khoản" → báo admin duyệt
+    if (action === 'confirm') {
+      const r = await confirmTransfer(session.userId, Number(id));
+      return NextResponse.json({ ...r, message: 'Đã báo admin, tiền sẽ được cộng ngay khi duyệt' });
+    }
     const deposit = await createDeposit(session.userId, amount, method || 'vietqr', phone);
     return NextResponse.json({ deposit });
   } catch (e) {

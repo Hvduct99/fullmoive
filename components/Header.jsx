@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Search, Loader2, Menu, X, ChevronDown, User, LogOut, Shield, LayoutDashboard, UserCircle, History, MessageSquare } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from './LanguageContext';
+import AdminNotifyBell from './AdminNotifyBell';
 import { useRouter } from 'next/navigation';
 
 const Header = () => {
@@ -326,6 +327,9 @@ const Header = () => {
             </div>
             {showResults && query.trim() && renderSearchResults(results, loading, query)}
           </div>
+
+          {/* Chuông thông báo admin (đơn nạp tiền mới...) */}
+          {userSession && (userSession.role === 'admin' || userSession.role === 'moderator') && <AdminNotifyBell />}
 
           {/* Language Toggle */}
           <button onClick={toggleLang} className="flex items-center justify-center w-7 h-7 md:w-8 md:h-8 rounded-full bg-gray-800 hover:bg-gray-700 text-[10px] md:text-xs font-bold ring-1 ring-gray-600 shrink-0">

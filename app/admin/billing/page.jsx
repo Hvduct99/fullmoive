@@ -9,8 +9,8 @@ export default function AdminBillingPage() {
   const [actionLoading, setActionLoading] = useState(null);
   const [message, setMessage] = useState('');
 
-  const fetchTransactions = async () => {
-    setLoading(true);
+  const fetchTransactions = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch('/api/admin/billing');
       const data = await res.json();
@@ -19,7 +19,15 @@ export default function AdminBillingPage() {
     finally { setLoading(false); }
   };
 
-  useEffect(() => { fetchTransactions(); }, []);
+  // Tự làm mới mỗi 20 giây để thấy đơn nạp mới
+  useEffect(() => {
+    fetchTransactions();
+    const t = setInterval(() => { if (document.visibilityState === 'visible') fetchTransactions(true); }, 20000);
+    // Chuông admin vừa nhận thông báo mới → tải lại bảng ngay
+    const onNotify = () => fetchTransactions(true);
+    window.addEventListener('admin-notify', onNotify);
+    return () => { clearInterval(t); window.removeEventListener('admin-notify', onNotify); };
+  }, []);
 
   const handleAction = async (id, action) => {
     setActionLoading(id);
@@ -44,7 +52,7 @@ export default function AdminBillingPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-white">Giao dịch</h2>
-        <button onClick={fetchTransactions} className="flex items-center gap-2 px-3 py-1.5 bg-[#2a2a2a] rounded hover:bg-[#333] text-sm text-gray-300">
+        <button onClick={() => fetchTransactions()} className="flex items-center gap-2 px-3 py-1.5 bg-[#2a2a2a] rounded hover:bg-[#333] text-sm text-gray-300">
           <RefreshCcw size={14} /> Làm mới
         </button>
       </div>
@@ -73,14 +81,19 @@ export default function AdminBillingPage() {
             ) : transactions.map(tx => (
               <tr key={tx.id} className="border-t border-[#333] hover:bg-[#1e1e1e]">
                 <td className="px-4 py-3">{tx.id}</td>
-                <td className="px-4 py-3 text-white font-medium">{tx.username}</td>
+                <td className="px-4 py-3 text-white font-medium">{tx.username}{tx.type === 'deposit' && tx.phone && <span className="block text-[11px] text-gray-500">SĐT {tx.phone}</span>}</td>
                 <td className="px-4 py-3">
                   <span className="text-xs px-2 py-0.5 rounded bg-green-900 text-green-200">
                     {tx.type === 'deposit' ? 'Nạp tiền' : tx.type === 'pass' ? 'Mua Pass' : tx.type === 'cinema' ? 'Ưu tiên Rạp Chung' : tx.type === 'cinema_refund' ? 'Hoàn Rạp Chung' : tx.type}
                   </span>
                 </td>
                 <td className="px-4 py-3 font-semibold">{Number(tx.amount).toLocaleString()} đ</td>
-                <td className={`px-4 py-3 ${statusColor(tx.status)}`}>{statusLabel(tx.status)}</td>
+                <td className={`px-4 py-3 ${statusColor(tx.status)}`}>
+                  {statusLabel(tx.status)}
+                  {tx.status === 'pending' && tx.user_confirmed_at && (
+                    <span className="block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 w-fit" title={new Date(Number(tx.user_confirmed_at)).toLocaleString('vi-VN')}>Đã báo chuyển khoản</span>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-gray-400 max-w-[150px] truncate">{tx.note || '-'}</td>
                 <td className="px-4 py-3 text-gray-500">{new Date(tx.created_at).toLocaleString('vi-VN')}</td>
                 <td className="px-4 py-3">

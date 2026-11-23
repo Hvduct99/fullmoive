@@ -5,11 +5,6 @@ import { X, Zap, Wallet, QrCode, Check, Copy, Loader2, ArrowLeft, Sparkles, Crow
 import { useUser } from './UserContext';
 import { PLANS, TOPUP_AMOUNTS, MIN_TOPUP, MAX_TOPUP, getPlan, formatVnd, formatK, getEnergy } from '@/lib/membership';
 
-const METHODS = [
-  { id: 'vietqr', label: 'VietQR', sub: 'Mọi ngân hàng', color: '#0ea5e9' },
-  { id: 'momo', label: 'MoMo', sub: 'Ví điện tử', color: '#d82d8b' },
-  { id: 'zalopay', label: 'ZaloPay', sub: 'Ví điện tử', color: '#0068ff' },
-];
 const POLL_MS = 5000;
 
 function CopyField({ label, value }) {
@@ -41,7 +36,7 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
   const [planId, setPlanId] = useState(getPlan(initialPlanId) ? initialPlanId : '3m');
   const [amount, setAmount] = useState(100000);
   const [custom, setCustom] = useState('');
-  const [method, setMethod] = useState('vietqr');
+  const method = 'vietqr'; // chuyển khoản ngân hàng bằng ảnh QR của tài khoản nhận
   const [step, setStep] = useState('choose'); // choose | pay | done
   const [deposit, setDeposit] = useState(null);
   const [pendingPlan, setPendingPlan] = useState(null);
@@ -49,7 +44,8 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
   const [error, setError] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
   const [needPhone, setNeedPhone] = useState(!user?.phone);
-  const [qrFailed, setQrFailed] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmMsg, setConfirmMsg] = useState('');
   const [doneMsg, setDoneMsg] = useState('');
   const [countdown, setCountdown] = useState(POLL_MS / 1000);
   const finishingRef = useRef(false);
@@ -103,7 +99,7 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
       // SĐT vừa lưu làm nội dung chuyển khoản → cập nhật vào hồ sơ đang hiển thị
       if (data.deposit?.code && data.deposit.code !== user?.phone) setUser((u) => ({ ...u, phone: data.deposit.code }));
       setNeedPhone(false);
-      setQrFailed(false);
+      setConfirmMsg('');
       setDeposit(data.deposit);
       setPendingPlan(planToBuy);
       setCountdown(POLL_MS / 1000);
@@ -112,6 +108,22 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
       setError(e.message);
     } finally {
       setBusy(false);
+    }
+  };
+
+  // Người nạp báo đã chuyển khoản → admin nhận thông báo để duyệt ngay
+  const confirmTransfer = async () => {
+    if (!deposit?.id) return;
+    setConfirming(true);
+    try {
+      const res = await fetch('/api/user/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', id: deposit.id }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.message || 'Không gửi được');
+      setConfirmMsg(d.status === 'completed' ? 'Đơn này đã được duyệt rồi!' : 'Đã báo admin! Tiền sẽ vào ví ngay khi admin xác nhận giao dịch.');
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -174,7 +186,6 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
     return () => { stopped = true; clearInterval(poll); clearInterval(tickT); };
   }, [step, deposit?.id, pendingPlan]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const methodInfo = METHODS.find((m) => m.id === (deposit?.method || method));
 
   return (
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/75 backdrop-blur-sm p-0 sm:p-4" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -257,25 +268,6 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
                 </div>
               )}
 
-              {/* Cổng thanh toán (chỉ cần khi phải nạp tiền) */}
-              {(tab === 'wallet' || shortfall > 0) && (
-                <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-500 mb-2">Cổng thanh toán tức thì</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {METHODS.map((m) => (
-                      <button key={m.id} onClick={() => setMethod(m.id)}
-                        className={`rounded-xl border px-3 py-3 text-left transition ${method === m.id ? 'border-[var(--fx)] bg-[rgb(var(--fx-rgb)/0.08)]' : 'border-white/10 hover:border-white/25'}`}>
-                        <span className="flex items-center gap-2">
-                          <span className="w-2.5 h-2.5 rounded-full" style={{ background: m.color }} />
-                          <span className="text-white font-bold text-sm">{m.label}</span>
-                        </span>
-                        <span className="block text-[11px] text-gray-500 mt-0.5">{m.sub}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Tóm tắt + CTA */}
               <div className="rounded-xl bg-white/[0.03] border border-white/10 p-4 space-y-2 text-sm">
                 <div className="flex justify-between text-gray-400"><span>Số dư ví</span><span className="text-white font-semibold">{formatVnd(balance)}</span></div>
@@ -322,36 +314,51 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
           {step === 'pay' && deposit && (
             <div className="space-y-4">
               <div className="text-center">
-                <p className="text-gray-400 text-sm">Chuyển khoản <b className="text-white">{formatVnd(deposit.amount)}</b> qua <b style={{ color: methodInfo?.color }}>{methodInfo?.label}</b></p>
+                <p className="text-gray-300 text-sm">Quét mã QR bằng app ngân hàng / MoMo / ZaloPay để chuyển <b className="text-white">{formatVnd(deposit.amount)}</b></p>
                 {pendingPlan && <p className="text-xs text-[var(--fx)] mt-1">Tiền vào là tự kích hoạt {faction.pass} {getPlan(pendingPlan)?.label}</p>}
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-5 items-center">
+              <div className="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
                 <div className="shrink-0 bg-white rounded-2xl p-2 shadow-[0_0_40px_-8px_rgb(var(--fx-rgb)/0.8)]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qrFailed ? deposit.staticQrUrl : deposit.qrUrl} alt="Mã VietQR VietinBank" onError={() => setQrFailed(true)} className={qrFailed ? 'w-56 h-auto object-contain' : 'w-56 h-56 object-contain'} />
+                  <img src={deposit.qrUrl} alt={`QR chuyển khoản ${deposit.bank} ${deposit.accountNo}`} className="w-56 h-auto object-contain rounded-xl" />
                 </div>
                 <div className="flex-1 w-full space-y-2">
-                  {deposit.method !== 'vietqr' && (
-                    <p className="text-xs text-gray-400">Mở app <b className="text-white">{methodInfo?.label}</b> → <b className="text-white">Quét mã QR</b> bên cạnh (chuyển tới ngân hàng).</p>
-                  )}
+                  <ol className="text-xs text-gray-400 space-y-1 list-decimal list-inside">
+                    <li>Quét mã QR bên cạnh.</li>
+                    <li>Nhập đúng <b className="text-white">số tiền</b> và <b className="text-white">nội dung</b> bên dưới.</li>
+                    <li>Chuyển xong bấm <b className="text-white">“Tôi đã chuyển khoản”</b>.</li>
+                  </ol>
                   <CopyField label="Nội dung chuyển khoản (SĐT của bạn — bắt buộc)" value={deposit.code} />
                   <CopyField label="Số tiền" value={deposit.amount} />
                   <CopyField label={`Số tài khoản · ${deposit.bank}`} value={deposit.accountNo} />
                   {deposit.accountName && <CopyField label="Chủ tài khoản" value={deposit.accountName} />}
-                  {deposit.phone && <CopyField label={`Hoặc chuyển tới số ví ${methodInfo?.label}`} value={deposit.phone} />}
                 </div>
               </div>
+
+              {error && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">{error}</p>}
+
+              {confirmMsg ? (
+                <div className="flex items-center gap-3 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3">
+                  <Check size={18} className="text-emerald-400 shrink-0" />
+                  <p className="text-sm text-emerald-200">{confirmMsg}</p>
+                </div>
+              ) : (
+                <button onClick={confirmTransfer} disabled={confirming}
+                  className="w-full py-3.5 rounded-xl font-black text-black bg-gradient-to-r from-[var(--fx2)] to-[var(--fx)] hover:brightness-110 disabled:opacity-60 flex items-center justify-center gap-2">
+                  {confirming ? <Loader2 size={18} className="animate-spin" /> : <Check size={18} />} Tôi đã chuyển khoản
+                </button>
+              )}
 
               <div className="flex items-center gap-3 rounded-xl border border-[rgb(var(--fx-rgb)/0.3)] bg-[rgb(var(--fx-rgb)/0.06)] px-4 py-3">
                 <Loader2 size={18} className="animate-spin text-[var(--fx)] shrink-0" />
                 <p className="text-sm text-gray-300">
                   {deposit.autoConfirm
-                    ? <>Đang chờ tiền về… hệ thống tự kiểm tra sau <b className="text-[var(--fx)]">{countdown}s</b> và cộng ngay khi nhận được.</>
-                    : <>Đang chờ xác nhận… tự kiểm tra lại sau <b className="text-[var(--fx)]">{countdown}s</b>. Admin sẽ duyệt trong ít phút.</>}
+                    ? <>Đang chờ tiền về… tự kiểm tra sau <b className="text-[var(--fx)]">{countdown}s</b> và cộng ngay khi nhận được.</>
+                    : <>Đang chờ admin duyệt… tự kiểm tra lại sau <b className="text-[var(--fx)]">{countdown}s</b>. Tiền vào ví ngay khi admin xác nhận.</>}
                 </p>
               </div>
-              <p className="text-[11px] text-gray-500 text-center">Ghi <b>đúng nội dung</b> để được cộng tự động. Có thể đóng bảng này — tiền vẫn được cộng khi về.</p>
+              <p className="text-[11px] text-gray-500 text-center">Ghi <b>đúng nội dung (SĐT)</b> để admin nhận ra bạn. Có thể đóng bảng này — tiền vẫn được cộng khi duyệt.</p>
             </div>
           )}
 
