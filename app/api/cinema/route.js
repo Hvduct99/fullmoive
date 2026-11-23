@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { walletErrorResponse } from '@/lib/wallet';
-import { getNowPlaying, getQueue, getRequesterName, requestMovie, boostRequest, cancelRequest, MIN_BID, MAX_BID, MAX_QUEUED_PER_USER } from '@/lib/cinema';
+import { getNowPlaying, getQueue, getRequesterName, requestMovie, boostRequest, cancelRequest, getCinemaDiag, MIN_BID, MAX_BID, MAX_QUEUED_PER_USER } from '@/lib/cinema';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +35,8 @@ export async function GET() {
         queue,
         rules: { minBid: MIN_BID, maxBid: MAX_BID, maxQueuedPerUser: MAX_QUEUED_PER_USER },
         loggedIn: !!session,
+        // Chỉ khi chưa chiếu được phim: lý do lỗi để chẩn đoán (không chứa dữ liệu nhạy cảm)
+        ...(now ? {} : { diag: getCinemaDiag() }),
         serverTime: Date.now(),
       },
       { headers: NO_STORE }
