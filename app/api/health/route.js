@@ -5,6 +5,12 @@ import { ensureDatabaseSchema, schemaStatus } from '@/lib/dbUtils';
 
 export const dynamic = 'force-dynamic';
 
+// Thông tin chẩn đoán realtime (không chứa đường dẫn hay dữ liệu nhạy cảm)
+function diag(s) {
+  if (!s) return { instrumentation: 'not-run' };
+  return { instrumentation: 'ran', tries: s.tries, coreFound: s.coreFound, serverFound: s.serverFound, standalone: s.standalone, error: s.error, startedAt: s.startedAt };
+}
+
 const REQUIRED_TABLES = ['users', 'transactions', 'watch_history', 'user_sessions', 'user_library', 'watch_parties', 'watch_party_members', 'watch_party_messages', 'comments'];
 
 /**
@@ -16,7 +22,9 @@ export async function GET() {
   const party = globalThis.__watchParty;
   const out = {
     ok: true,
-    realtime: party ? { enabled: true, mode: globalThis.__watchPartyMode || 'unknown', ...party.stats() } : { enabled: false },
+    realtime: party
+      ? { enabled: true, mode: globalThis.__watchPartyMode || 'unknown', ...party.stats() }
+      : { enabled: false, diagnostics: diag(globalThis.__watchPartyStatus) },
     time: new Date().toISOString(),
   };
 
