@@ -113,10 +113,10 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
 
   // Người nạp báo đã chuyển khoản → admin nhận thông báo để duyệt ngay
   const confirmTransfer = async () => {
-    if (!deposit?.id) return;
+    if (!deposit) return;
     setConfirming(true);
     try {
-      const res = await fetch('/api/user/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', id: deposit.id }) });
+      const res = await fetch('/api/user/deposit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', id: deposit.id, amount: deposit.amount, phone: deposit.code }) });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.message || 'Không gửi được');
       setConfirmMsg(d.status === 'completed' ? 'Đơn này đã được duyệt rồi!' : 'Đã báo admin! Tiền sẽ vào ví ngay khi admin xác nhận giao dịch.');
@@ -353,7 +353,9 @@ export default function TopupModal({ initialTab = 'pass', initialPlanId = null, 
               <div className="flex items-center gap-3 rounded-xl border border-[rgb(var(--fx-rgb)/0.3)] bg-[rgb(var(--fx-rgb)/0.06)] px-4 py-3">
                 <Loader2 size={18} className="animate-spin text-[var(--fx)] shrink-0" />
                 <p className="text-sm text-gray-300">
-                  {deposit.autoConfirm
+                  {!deposit.id
+                    ? <>Chuyển xong bấm <b className="text-white">“Tôi đã chuyển khoản”</b>, admin sẽ kiểm tra và cộng tiền vào ví cho bạn.</>
+                    : deposit.autoConfirm
                     ? <>Đang chờ tiền về… tự kiểm tra sau <b className="text-[var(--fx)]">{countdown}s</b> và cộng ngay khi nhận được.</>
                     : <>Đang chờ admin duyệt… tự kiểm tra lại sau <b className="text-[var(--fx)]">{countdown}s</b>. Tiền vào ví ngay khi admin xác nhận.</>}
                 </p>
