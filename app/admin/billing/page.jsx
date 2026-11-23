@@ -76,7 +76,7 @@ export default function AdminBillingPage() {
                 <td className="px-4 py-3 text-white font-medium">{tx.username}</td>
                 <td className="px-4 py-3">
                   <span className="text-xs px-2 py-0.5 rounded bg-green-900 text-green-200">
-                    {tx.type === 'deposit' ? 'Nạp tiền' : tx.type === 'pass' ? 'Mua Pass' : tx.type}
+                    {tx.type === 'deposit' ? 'Nạp tiền' : tx.type === 'pass' ? 'Mua Pass' : tx.type === 'cinema' ? 'Ưu tiên Rạp Chung' : tx.type === 'cinema_refund' ? 'Hoàn Rạp Chung' : tx.type}
                   </span>
                 </td>
                 <td className="px-4 py-3 font-semibold">{Number(tx.amount).toLocaleString()} đ</td>

@@ -239,7 +239,10 @@ export function Panel({ children, className = '' }) {
 export function TxRow({ tx }) {
   const amount = Number(tx.amount);
   const status = { pending: ['Đang chờ', 'text-amber-400'], completed: ['Thành công', 'text-emerald-400'], rejected: ['Từ chối', 'text-red-400'] }[tx.status] || [tx.status, 'text-gray-400'];
-  const label = tx.type === 'pass' ? (tx.note || 'Mua Pass') : tx.type === 'deposit' ? 'Nạp tiền vào ví' : tx.type;
+  const label = tx.type === 'pass' ? (tx.note || 'Mua Pass')
+    : tx.type === 'deposit' ? 'Nạp tiền vào ví'
+    : tx.type === 'cinema' || tx.type === 'cinema_refund' ? (tx.note || 'Rạp Chung')
+    : tx.type;
   return (
     <li className="flex items-center justify-between gap-3 py-2.5">
       <div className="min-w-0">

@@ -176,6 +176,7 @@ const Header = () => {
     { href: '/danh-sach/phim-bo', label: lang === 'vi' ? 'Phim Bộ' : 'Series', type: 'link' },
     { href: '/danh-sach/hoat-hinh', label: lang === 'vi' ? 'Hoạt Hình' : 'Anime', type: 'link' },
     { href: '/danh-sach/phim-chieu-rap', label: t.theatrical, type: 'link' },
+    { href: '/rap-chung', label: lang === 'vi' ? '🔴 Rạp Chung' : '🔴 Live', type: 'link' },
   ];
 
   // Search results renderer (shared between desktop and mobile)
@@ -281,7 +282,7 @@ const Header = () => {
         </div>
 
         {/* === CENTER: Desktop Navigation === */}
-        <nav className="hidden lg:flex space-x-4 xl:space-x-6 items-center">
+        <nav className="hidden lg:flex space-x-3 xl:space-x-5 items-center whitespace-nowrap">
           {navLinks.map((link, index) => {
             if (link.type === 'dropdown') {
               return (
