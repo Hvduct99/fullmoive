@@ -146,7 +146,9 @@ export default function useWatchPartySync({ code, video: videoEl, socketUrl, isH
       if (cancelled) return;
 
       socket = io(socketUrl, {
-        transports: ['websocket', 'polling'],
+        // Bắt đầu bằng HTTP long-polling rồi tự nâng cấp lên WebSocket nếu proxy cho phép
+        // → luôn kết nối được kể cả khi hosting chặn WebSocket
+        transports: ['polling', 'websocket'],
         reconnection: true,
         reconnectionDelay: 1000,
         reconnectionDelayMax: 8000,

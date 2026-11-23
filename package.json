@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "build": "npm run clean && NODE_OPTIONS='--max-old-space-size=512' next build",
-    "start": "NODE_OPTIONS='--max-old-space-size=512' next start",
+    "start": "NODE_OPTIONS='--max-old-space-size=512' node server.js",
     "lint": "next lint",
-    "clean": "node -e \"try{require('fs').rmSync('.next', {recursive: true, force: true})}catch(e){}\""
+    "clean": "node -e \"try{require('fs').rmSync('.next', {recursive: true, force: true})}catch(e){}\"",
+    "start:next-only": "NODE_OPTIONS='--max-old-space-size=512' next start"
   },
   "dependencies": {
     "axios": "^1.6.0",

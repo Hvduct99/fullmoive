@@ -1,95 +1,75 @@
 # Phòng Xem Chung realtime — hướng dẫn triển khai
 
-Tài liệu cho người vận hành site, đã quen SSH vào Hostinger và dùng pm2.
+Tài liệu cho người vận hành site trên **Hostinger Node.js app**: Hostinger lấy code từ GitHub, tự build và chạy.
 
 Khi chạy, mọi người trong phòng thấy cùng một trạng thái video: **play, pause, tua, đổi tập**. Người vào trễ được đưa tới đúng giây đang chiếu. Chat hiện ra ngay khi gửi.
+
+## Cách chạy trên Hostinger Node.js app (mặc định, không cần cấu hình thêm)
+
+`server.js` ở thư mục gốc chạy **web (Next.js) và Socket.IO trên cùng một cổng**. Trình duyệt tự kết nối về chính tên miền của web qua đường dẫn `/socket.io`, nên:
+
+- **Không cần** đặt `NEXT_PUBLIC_SOCKET_URL`.
+- **Không cần** mở cổng riêng, không cần pm2, không cần SSH.
+- Nếu proxy của Hostinger không cho WebSocket, Socket.IO tự dùng HTTP long-polling và vẫn đồng bộ được (đã test cả hai kiểu).
+
+Việc duy nhất cần kiểm tra trong hPanel → Websites → *site* → **cài đặt Node.js app**:
+
+| Mục | Giá trị |
+|---|---|
+| Build command | `npm run build` |
+| Start command | `npm start` (script này chạy `node server.js`) |
+| Node.js version | 18 trở lên |
+
+> Nếu start command đang là `next start`, đổi thành `npm start`. Chạy `next start` thì web vẫn chạy bình thường, nhưng **không có realtime**: phòng xem chung tự chuyển sang chế độ thường (video phát riêng từng máy, chat cập nhật mỗi 3 giây).
+
+Kiểm tra sau khi deploy: mở `https://<tên-miền>/socket-health`. Thấy `{"ok":true,...}` là realtime đang chạy.
+
+Biến môi trường (đặt trong mục Environment variables của Node.js app):
+- `SESSION_SECRET`: đã có sẵn, dùng luôn để ký token realtime.
+- `SOCKET_SECRET`: không bắt buộc. Chỉ cần khi muốn dùng khoá riêng cho realtime.
 
 ## Thành phần
 
 | Thành phần | File | Vai trò |
 |---|---|---|
-| Socket.IO server | `socket-server/index.mjs` | Quản lý phòng theo mã, giữ trạng thái video chuẩn, đồng bộ đồng hồ, phát chat |
-| Cấp token | `app/api/watch-party/[code]/socket-token/route.js` | Chỉ thành viên phòng mới lấy được token (hạn 6 giờ) để kết nối socket |
+| Server chính | `server.js` | Next.js + Socket.IO trên cùng cổng, có `/socket-health` |
+| Lõi realtime | `socket-server/core.mjs` | Quản lý phòng theo mã, giữ trạng thái video chuẩn, đồng bộ đồng hồ, phát chat |
+| Chạy riêng (tuỳ chọn) | `socket-server/index.mjs` | Dùng khi muốn đặt socket server ở máy khác |
+| Cấp token | `app/api/watch-party/[code]/socket-token/route.js` | Chỉ thành viên phòng mới lấy được token (hạn 6 giờ) |
 | Hook đồng bộ | `components/watch-party/useWatchPartySync.js` | Gắn vào thẻ `<video>`: chống lặp sự kiện, bù lệch giờ, tự sửa trôi |
 | Trình phát | `components/watch-party/HlsVideo.jsx` | Phát `link_m3u8` bằng hls.js (Safari dùng HLS gốc) |
 | Trang phòng | `app/user/watch-party/[code]/page.jsx` | Ghép player, hook và chat lại với nhau |
 
-Player cũ trên trang xem phim là iframe của phimapi, nằm ở domain khác nên trình duyệt không cho điều khiển từ ngoài. Vì vậy phòng xem chung phát trực tiếp nguồn `m3u8` của chính phim đó. Nguồn này cho phép phát từ domain khác (đã kiểm tra header `Access-Control-Allow-Origin: *` ở cả playlist lẫn từng đoạn `.ts`).
+Player cũ trên trang xem phim là iframe của phimapi, nằm ở domain khác nên trình duyệt không cho điều khiển từ ngoài. Vì vậy phòng xem chung phát trực tiếp nguồn `m3u8` của chính phim đó. Nguồn này cho phép phát từ domain khác (`Access-Control-Allow-Origin: *` ở cả playlist lẫn từng đoạn `.ts`).
 
-## Biến môi trường
+## Tuỳ chọn: chạy socket server ở chỗ khác
 
-Thêm vào file `.env` ở thư mục gốc project trên server:
+Chỉ cần khi muốn tách realtime khỏi web (ví dụ web quá tải):
 
-```env
-# Địa chỉ socket server mà trình duyệt người xem kết nối tới (bắt buộc https nếu site chạy https)
-NEXT_PUBLIC_SOCKET_URL=https://socket.tenmien.com
-
-# Cổng socket server lắng nghe bên trong server
-SOCKET_PORT=3001
-
-# Domain được phép kết nối, phân tách bằng dấu phẩy
-SOCKET_CORS_ORIGIN=https://tenmien.com,https://www.tenmien.com
-
-# Khoá ký token. Bỏ trống thì dùng SESSION_SECRET (khi web và socket chạy chung server)
-SOCKET_SECRET=
-```
-
-> **Quan trọng:** `NEXT_PUBLIC_SOCKET_URL` được đóng gói vào code trình duyệt **lúc `npm run build`**. Khi thêm hoặc đổi biến này phải build lại. Workflow deploy đã tự build trên server sau mỗi lần push, nên chỉ cần sửa `.env` trước rồi push, hoặc SSH vào chạy `npm run build && pm2 startOrRestart ecosystem.config.js`.
-
-Chưa đặt `NEXT_PUBLIC_SOCKET_URL` thì phòng vẫn hoạt động: video phát riêng trên từng máy, chat cập nhật mỗi 3 giây. Góc phòng hiện nhãn "Chưa bật realtime".
-
-## Cách A: chạy chung server Hostinger (VPS hoặc gói có SSH và pm2)
-
-1. `ecosystem.config.js` đã khai báo sẵn 2 app: `fullmovie` (Next.js, cổng 3000) và `fullmovie-socket` (Socket.IO, cổng 3001). Workflow deploy chạy `pm2 startOrRestart ecosystem.config.js`, nên socket server tự khởi động sau mỗi lần push.
-2. Kiểm tra trên server:
-   ```bash
-   pm2 status                          # thấy fullmovie-socket đang online
-   curl http://127.0.0.1:3001/health   # {"ok":true,...}
-   ```
-3. Đưa cổng 3001 ra ngoài qua HTTPS (WebSocket cần `wss://`). Với **Nginx**, tạo subdomain `socket.tenmien.com`:
-   ```nginx
-   server {
-     server_name socket.tenmien.com;
-     location / {
-       proxy_pass http://127.0.0.1:3001;
-       proxy_http_version 1.1;
-       proxy_set_header Upgrade $http_upgrade;
-       proxy_set_header Connection "upgrade";
-       proxy_set_header Host $host;
-       proxy_read_timeout 3600s;
-     }
-     # listen 443 ssl; ... (cấp SSL bằng certbot: certbot --nginx -d socket.tenmien.com)
-   }
-   ```
-   Sau đó đặt `NEXT_PUBLIC_SOCKET_URL=https://socket.tenmien.com`.
-4. Nếu không dùng subdomain, có thể đặt chung domain với đường dẫn `/socket.io/` (proxy `location /socket.io/` về `127.0.0.1:3001`). Khi đó `NEXT_PUBLIC_SOCKET_URL=https://tenmien.com`.
-
-## Cách B: gói Hostinger không mở được cổng / không có pm2
-
-Deploy riêng thư mục `socket-server/` lên một dịch vụ Node có WebSocket (Render, Railway, Fly.io, VPS bất kỳ):
-
-- Root directory: `socket-server`
-- Build: `npm install` · Start: `npm start`
-- Biến môi trường:
-  - `SOCKET_SECRET`: chuỗi bí mật, **phải giống hệt** `SOCKET_SECRET` (hoặc `SESSION_SECRET`) trong `.env` của web
-  - `SOCKET_CORS_ORIGIN=https://tenmien.com,https://www.tenmien.com`
-  - `SOCKET_PORT`: theo cổng dịch vụ cấp (nhiều nơi dùng biến `PORT`; đặt `SOCKET_PORT=$PORT`)
-
-Rồi đặt `NEXT_PUBLIC_SOCKET_URL=https://<địa-chỉ-dịch-vụ>` trong `.env` của web và build lại.
+1. Deploy thư mục `socket-server/` lên dịch vụ Node có WebSocket (VPS, Render, Railway...): `npm install`, rồi `npm start`.
+2. Đặt biến môi trường cho dịch vụ đó:
+   - `SOCKET_SECRET` = giá trị **giống hệt** `SOCKET_SECRET` (hoặc `SESSION_SECRET`) của web
+   - `SOCKET_CORS_ORIGIN=https://tenmien.com,https://www.tenmien.com`
+   - `SOCKET_PORT` theo cổng dịch vụ cấp
+3. Trong biến môi trường của web, đặt `NEXT_PUBLIC_SOCKET_URL=https://<địa-chỉ-socket-server>` rồi **build lại**, vì biến `NEXT_PUBLIC_*` được đóng gói lúc build.
 
 ## Cách đồng bộ hoạt động
 
-- **Trạng thái chuẩn trên server:** `{ playing, time, updatedAt, episode }`. Vị trí hiện tại = `time + (bây giờ − updatedAt)` khi đang phát. Nhờ vậy người vào trễ nhảy đúng tới giây đang chiếu.
+- **Trạng thái chuẩn trên server:** `{ playing, time, updatedAt, episode }`. Vị trí hiện tại = `time + (bây giờ − updatedAt)` khi đang phát, nên người vào trễ nhảy đúng tới giây đang chiếu.
 - **Bù lệch đồng hồ:** khi kết nối, client ping server 6 lần, lấy lần có thời gian khứ hồi nhỏ nhất và tính `offset = serverNow − (giờ gửi + RTT/2)`. Việc này lặp lại mỗi 30 giây.
-- **Chống lặp sự kiện:** khi code tự gọi `play()`, `pause()` hoặc đặt `currentTime`, hook bật cờ tương ứng. Sự kiện video do chính code gây ra sẽ dùng hết cờ đó và không bị gửi ngược lên server, nên không xảy ra vòng lặp.
-- **Tự sửa trôi (mỗi giây):** lệch quá 1 giây thì nhảy thẳng tới vị trí đúng. Lệch 0,2–1 giây thì tăng hoặc giảm tốc độ phát tối đa 8% để bắt kịp mà không giật.
-- **Quyền điều khiển:** mặc định chỉ chủ phòng. Chủ phòng có thể bật "Cho mọi người cùng điều khiển". Người không có quyền mà bấm thì video tự quay về trạng thái của phòng.
-- **Trình duyệt chặn tự phát:** hiện nút "Bấm để vào xem cùng". Bấm xong là nhảy đúng giây và phát.
-- **Chat:** tin nhắn lưu vào database qua API (có `id`), rồi phát realtime qua socket. Phía nhận lọc trùng theo `id`. Người vào sau vẫn thấy lịch sử chat.
+- **Chống lặp sự kiện:** khi code tự gọi `play()`, `pause()` hoặc đặt `currentTime`, hook bật cờ tương ứng. Sự kiện video do chính code gây ra sẽ dùng hết cờ đó và không bị gửi ngược lên server.
+- **Thao tác của người điều khiển:** vị trí mới được cập nhật ngay tại máy (cập nhật lạc quan). Bản phản hồi của server cho chính thao tác đó được bỏ qua, nên không bị kéo ngược.
+- **Tự sửa trôi (mỗi giây):** lệch quá 1 giây thì nhảy thẳng. Lệch 0,2–1 giây thì tăng hoặc giảm tốc độ phát tối đa 8% để bắt kịp mà không giật. Khi đang dừng, khớp tới 0,05 giây.
+- **Quyền điều khiển:** mặc định chỉ chủ phòng. Chủ phòng có thể bật "Cho mọi người cùng điều khiển".
+- **Trình duyệt chặn tự phát:** hiện nút "Bấm để vào xem cùng".
+- **Chat:** tin nhắn lưu database qua API (có `id`), rồi phát realtime qua socket. Phía nhận lọc trùng theo `id`. Tên người gửi lấy từ token nên không giả mạo được.
 
-## Kiểm tra nhanh sau khi deploy
+## Kết quả đo (2 trình duyệt, 2 tài khoản, video HLS thật)
 
-1. `curl https://socket.tenmien.com/health` trả về `{"ok":true,...}`.
-2. Mở cùng một phòng trên 2 trình duyệt bằng 2 tài khoản. Nhãn góc phòng chuyển sang **"Đồng bộ · xx ms"**.
-3. Chủ phòng bấm play, tua hoặc pause: máy còn lại làm theo trong khoảng dưới 1 giây.
-4. Tải lại trang ở máy khách giữa chừng: máy khách quay lại đúng đoạn đang chiếu.
+| Tình huống | Độ lệch giữa 2 máy |
+|---|---|
+| Play | 0,02 giây |
+| Tua | 0,1 giây |
+| Pause | dưới 0,01 giây |
+| Vào trễ / tải lại trang | 0,05 giây |
+| Chat | tới nơi sau khoảng 50ms |

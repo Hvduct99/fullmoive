@@ -9,7 +9,9 @@ import HlsVideo from '@/components/watch-party/HlsVideo';
 import useWatchPartySync from '@/components/watch-party/useWatchPartySync';
 import { getFaction } from '@/lib/membership';
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || '';
+// Mặc định kết nối về CHÍNH tên miền của web (server.js gắn Socket.IO tại /socket.io).
+// Chỉ đặt NEXT_PUBLIC_SOCKET_URL khi chạy socket server ở chỗ khác.
+const SOCKET_URL_ENV = process.env.NEXT_PUBLIC_SOCKET_URL || '';
 const ACTION_LABEL = { play: 'phát', pause: 'tạm dừng', seek: 'tua', episode: 'chuyển tập' };
 
 export default function WatchPartyRoom({ params }) {
@@ -26,6 +28,8 @@ export default function WatchPartyRoom({ params }) {
   const [copied, setCopied] = useState(false);
   const [toasts, setToasts] = useState([]);
   const [videoEl, setVideoEl] = useState(null);
+  const [socketUrl, setSocketUrl] = useState(SOCKET_URL_ENV);
+  useEffect(() => { if (!SOCKET_URL_ENV) setSocketUrl(window.location.origin); }, []);
   const lastIdRef = useRef(0);
   const joinedRef = useRef(false);
   const chatRef = useRef(null);
@@ -50,7 +54,7 @@ export default function WatchPartyRoom({ params }) {
   const sync = useWatchPartySync({
     code,
     video: videoEl,
-    socketUrl: SOCKET_URL,
+    socketUrl,
     isHost,
     selfId: user.id,
     enabled: !!state?.isMember && state?.party?.status === 'open',

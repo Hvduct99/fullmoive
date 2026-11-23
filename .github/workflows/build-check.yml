@@ -1,0 +1,37 @@
+name: Build check
+
+# Web chạy bằng Hostinger Node.js app: Hostinger tự lấy code từ GitHub, build và chạy.
+# Workflow này chỉ kiểm tra code build được (báo lỗi sớm trước khi Hostinger deploy),
+# không SSH vào server.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_OPTIONS: '--max-old-space-size=512'
+
+      - name: Check realtime server syntax
+        run: node --check server.js && node --check socket-server/core.mjs && node --check socket-server/index.mjs
