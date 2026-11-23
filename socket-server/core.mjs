@@ -222,5 +222,24 @@ export function attachWatchParty(httpServer, opts = {}) {
   }, 60 * 1000);
   cleanup.unref?.();
 
-  return { io, stats: () => ({ rooms: rooms.size }) };
+  // ---------- Rạp Chung: namespace công khai /cinema (chỉ nhận) ----------
+  // Ai mở trang cũng nghe được chat + cập nhật hàng chờ; gửi tin đi qua API (có đăng nhập, lưu DB, chống spam)
+  // rồi API phát lại qua namespace này. Middleware xác thực ở trên chỉ áp cho namespace "/".
+  const cinema = io.of('/cinema');
+  let viewersTimer = null;
+  const emitViewers = () => {
+    // Gộp nhiều lần vào/ra liên tiếp thành 1 lần phát
+    if (viewersTimer) return;
+    viewersTimer = setTimeout(() => {
+      viewersTimer = null;
+      cinema.emit('presence', { viewers: cinema.sockets.size });
+    }, 500);
+  };
+  cinema.on('connection', (socket) => {
+    socket.emit('presence', { viewers: cinema.sockets.size });
+    emitViewers();
+    socket.on('disconnect', emitViewers);
+  });
+
+  return { io, stats: () => ({ rooms: rooms.size, cinemaViewers: cinema.sockets.size }) };
 }

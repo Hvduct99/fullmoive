@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { walletErrorResponse } from '@/lib/wallet';
-import { getNowPlaying, getQueue, getRequesterName, requestMovie, boostRequest, cancelRequest, getCinemaDiag, reportDuration, MIN_BID, MAX_BID, MAX_QUEUED_PER_USER } from '@/lib/cinema';
+import { broadcastCinema, viewerCount } from '@/lib/cinemaChat';
+import { getNowPlaying, getQueue, getRequesterName, requestMovie, boostRequest, cancelRequest, getCinemaDiag, reportDuration, getFreeStatus, MIN_BID, MAX_BID, MAX_QUEUED_PER_USER } from '@/lib/cinema';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,6 +15,7 @@ export async function GET() {
     // Tuần tự: lịch chiếu có thể vừa chuyển phim → đọc hàng chờ SAU đó để không hiện phim đang chiếu trong hàng chờ
     const now = await getNowPlaying();
     const queue = await getQueue(session?.userId);
+    const free = session ? await getFreeStatus(session.userId) : null;
     const requester = now?.queue_id ? await getRequesterName(now.queue_id) : null;
     return NextResponse.json(
       {
@@ -36,6 +38,9 @@ export async function GET() {
         queue,
         rules: { minBid: MIN_BID, maxBid: MAX_BID, maxQueuedPerUser: MAX_QUEUED_PER_USER },
         loggedIn: !!session,
+        // Lượt đề xuất miễn phí hôm nay (giờ Việt Nam)
+        free,
+        viewers: viewerCount(),
         // Chỉ khi chưa chiếu được phim: lý do lỗi để chẩn đoán (không chứa dữ liệu nhạy cảm)
         ...(now ? {} : { diag: getCinemaDiag() }),
         serverTime: Date.now(),
@@ -54,7 +59,9 @@ export async function POST(request) {
   try { peek = await request.clone().json(); } catch { /* bỏ qua */ }
   if (peek?.action === 'duration') {
     try {
-      return NextResponse.json(await reportDuration(peek));
+      const r = await reportDuration(peek);
+      if (r.accepted) broadcastCinema('cinema:refresh', { reason: 'duration' });
+      return NextResponse.json(r);
     } catch (e) {
       return walletErrorResponse(NextResponse, e, 'Lỗi cập nhật thời lượng');
     }
@@ -67,14 +74,17 @@ export async function POST(request) {
     const body = await request.json();
     if (body.action === 'request') {
       const r = await requestMovie(session.userId, body);
+      broadcastCinema('cinema:refresh', { reason: 'request' });
       return NextResponse.json({ ...r, message: r.merged ? 'Phim này đã có trong hàng chờ — đã góp thêm vào đề xuất đó!' : 'Đã thêm vào hàng chờ!' });
     }
     if (body.action === 'boost') {
       await boostRequest(session.userId, Number(body.queue_id), body.amount);
+      broadcastCinema('cinema:refresh', { reason: 'boost' });
       return NextResponse.json({ message: 'Đã góp thêm, phim được đẩy lên!' });
     }
     if (body.action === 'cancel') {
       await cancelRequest(session.userId, Number(body.queue_id));
+      broadcastCinema('cinema:refresh', { reason: 'cancel' });
       return NextResponse.json({ message: 'Đã huỷ và hoàn tiền cho mọi người đã góp' });
     }
     return NextResponse.json({ message: 'Hành động không hợp lệ' }, { status: 400 });

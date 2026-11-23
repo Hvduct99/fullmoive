@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Radio, Search, Loader2, Play, Crown, Coins, Trophy, X, Film, Clock, Zap, Wallet, Info } from 'lucide-react';
+import { Radio, Search, Loader2, Play, Crown, Coins, Trophy, X, Film, Clock, Zap, Wallet, Info, MessageCircle, Send, Users, Gift, Trash2 } from 'lucide-react';
 import HlsVideo from '@/components/watch-party/HlsVideo';
 
 const QUICK_BIDS = [0, 10000, 20000, 50000, 100000];
@@ -27,6 +27,10 @@ export default function CinemaPage() {
   const [offLive, setOffLive] = useState(false);
   const [toast, setToast] = useState('');
   const [tick, setTick] = useState(0);
+  const [socket, setSocket] = useState(null);
+  const [live, setLive] = useState(false);
+  const [viewers, setViewers] = useState(null);
+  const [me, setMe] = useState(null);
   const offsetRef = useRef(0);
   const nowRef = useRef(null);
   const guardSeekRef = useRef(0);
@@ -64,9 +68,37 @@ export default function CinemaPage() {
 
   useEffect(() => {
     load();
-    const t = setInterval(() => { if (document.visibilityState === 'visible') load(); }, POLL_MS);
+    // Có realtime thì chỉ cần poll thưa (dự phòng); mất realtime thì poll 10 giây
+    const t = setInterval(() => { if (document.visibilityState === 'visible') load(); }, live ? 30000 : POLL_MS);
     const c = setInterval(() => setTick((x) => x + 1), 1000);
     return () => { clearInterval(t); clearInterval(c); clearTimeout(endTimerRef.current); };
+  }, [load, live]);
+
+  // Người đang xem (để biết tin nhắn nào của mình, quyền xoá tin của admin)
+  useEffect(() => {
+    fetch('/api/auth/session', { cache: 'no-store' }).then((r) => r.json()).then((d) => setMe(d.user || null)).catch(() => {});
+  }, []);
+
+  // Kết nối realtime công khai /cinema: chat + cập nhật hàng chờ ngay lập tức + số người đang xem
+  useEffect(() => {
+    let s = null;
+    let cancelled = false;
+    import('socket.io-client').then(({ io }) => {
+      if (cancelled) return;
+      s = io(`${window.location.origin}/cinema`, {
+        path: '/socket.io',
+        transports: ['polling', 'websocket'],
+        reconnection: true,
+        reconnectionDelayMax: 10000,
+      });
+      s.on('connect', () => setLive(true));
+      s.on('disconnect', () => setLive(false));
+      s.on('connect_error', () => setLive(false));
+      s.on('presence', (p) => setViewers(p?.viewers ?? null));
+      s.on('cinema:refresh', () => load());
+      setSocket(s);
+    }).catch(() => {});
+    return () => { cancelled = true; if (s) { s.removeAllListeners(); s.disconnect(); } };
   }, [load]);
 
   useEffect(() => {
@@ -148,9 +180,9 @@ export default function CinemaPage() {
 
       {error && !data && <p className="text-red-400">{error}</p>}
 
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Player trực tiếp */}
-        <div className="lg:col-span-2 space-y-3">
+        <div className="lg:col-span-2 space-y-3 min-w-0">
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/10">
             {!data ? (
               <div className="absolute inset-0 flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>
@@ -202,13 +234,15 @@ export default function CinemaPage() {
             <p>• Hàng chờ xếp theo <b className="text-white">tổng tiền ưu tiên</b>: góp càng nhiều càng lên gần #1. Cùng mức tiền thì ai đề xuất trước đứng trước.</p>
             <p>• Ai cũng có thể <b className="text-white">góp thêm</b> cho phim mình thích để đẩy phim lên. Đề xuất phim đã có trong hàng chờ = góp thêm cho phim đó.</p>
             <p>• Phim đang chiếu không bị cắt ngang. Riêng phim <b className="text-white">tự chọn</b> (khi chưa ai đề xuất) sẽ nhường ngay cho phim được đề xuất.</p>
-            <p>• Huỷ đề xuất trước khi tới lượt, hoặc phim lỗi nguồn → <b className="text-white">hoàn tiền</b> cho tất cả người đã góp.</p>
+            <p>• Mỗi ngày mỗi người có <b className="text-white">1 lượt đề xuất miễn phí</b> (reset 00:00 giờ Việt Nam). Đề xuất có ưu tiên thì không giới hạn lượt.</p>
+            <p>• Huỷ đề xuất trước khi tới lượt, hoặc phim lỗi nguồn → <b className="text-white">hoàn tiền</b> cho tất cả người đã góp. Phim lỗi nguồn còn được trả lại lượt miễn phí.</p>
           </div>
         </div>
 
         {/* Hàng chờ + đề xuất */}
-        <div className="space-y-5">
+        <div className="space-y-5 min-w-0">
           <RequestBox data={data} balance={balance} onDone={(msg) => { showToast(msg); load(); }} />
+          <ChatBox socket={socket} live={live} viewers={viewers ?? data?.viewers ?? null} me={me} />
           <QueueList data={data} onChanged={(msg) => { showToast(msg); load(); }} />
         </div>
       </div>
@@ -226,6 +260,13 @@ function RequestBox({ data, balance, onDone }) {
   const [episodes, setEpisodes] = useState([]);
   const [episode, setEpisode] = useState('');
   const [bid, setBid] = useState(0);
+  // Lượt miễn phí hôm nay: 1 = còn, 0 = đã dùng, null = chưa biết / chưa đăng nhập
+  const freeLeft = data?.free ? Number(data.free.freeLeft) : null;
+  const nextFreeAt = data?.free?.nextFreeAt || 0;
+  useEffect(() => {
+    // Hết lượt miễn phí mà đang chọn Free → tự chuyển sang mức ưu tiên thấp nhất
+    if (freeLeft === 0 && bid === 0) setBid(10000);
+  }, [freeLeft, bid]);
   const [custom, setCustom] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -275,6 +316,7 @@ function RequestBox({ data, balance, onDone }) {
     setError('');
     if (!movie || !episode) return setError('Chọn phim và tập trước đã');
     if (amount > 0 && amount < (data?.rules?.minBid || 1000)) return setError(`Ưu tiên tối thiểu ${vnd(data?.rules?.minBid || 1000)} hoặc 0đ`);
+    if (amount === 0 && freeLeft === 0) return setError('Hôm nay bạn đã dùng lượt miễn phí. Chọn mức ưu tiên từ 1.000đ nhé!');
     if (balance !== null && amount > balance) return setError('Số dư không đủ, nạp thêm ở mục Ví nhé');
     setBusy(true);
     try {
@@ -349,13 +391,25 @@ function RequestBox({ data, balance, onDone }) {
       <div>
         <p className="text-[11px] text-gray-500 mb-1.5">Tiền ưu tiên (trừ vào ví) — càng nhiều càng lên trước</p>
         <div className="grid grid-cols-5 gap-1.5">
-          {QUICK_BIDS.map((b) => (
-            <button key={b} onClick={() => { setBid(b); setCustom(''); }}
-              className={`py-2 rounded-lg text-xs font-bold border ${!custom && bid === b ? 'border-primary text-primary bg-primary/10' : 'border-white/10 text-gray-300 hover:border-white/30'}`}>
-              {b === 0 ? 'Free' : `${b / 1000}k`}
-            </button>
-          ))}
+          {QUICK_BIDS.map((b) => {
+            const lockedFree = b === 0 && freeLeft === 0;
+            return (
+              <button key={b} disabled={lockedFree} onClick={() => { setBid(b); setCustom(''); }}
+                title={lockedFree ? 'Đã dùng lượt miễn phí hôm nay' : undefined}
+                className={`py-2 rounded-lg text-xs font-bold border disabled:opacity-35 disabled:cursor-not-allowed ${!custom && bid === b ? 'border-primary text-primary bg-primary/10' : 'border-white/10 text-gray-300 hover:border-white/30'}`}>
+                {b === 0 ? (lockedFree ? 'Free ✕' : 'Free') : `${b / 1000}k`}
+              </button>
+            );
+          })}
         </div>
+        {freeLeft !== null && (
+          <p className={`mt-1.5 text-[11px] flex items-center gap-1 ${freeLeft ? 'text-emerald-400' : 'text-gray-500'}`}>
+            <Gift size={12} />
+            {freeLeft
+              ? 'Hôm nay bạn còn 1 lượt đề xuất miễn phí'
+              : `Đã dùng lượt miễn phí hôm nay · lượt mới sau ${clock((nextFreeAt - Date.now()) / 1000)}`}
+          </p>
+        )}
         <input inputMode="numeric" value={custom ? Number(String(custom).replace(/\D/g, '') || 0).toLocaleString('vi-VN') : ''} onChange={(e) => setCustom(e.target.value.replace(/\D/g, '').slice(0, 9))}
           placeholder="Hoặc nhập số khác" className="mt-1.5 w-full bg-black/40 border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-primary" />
       </div>
@@ -442,6 +496,151 @@ function QueueList({ data, onChanged }) {
             </li>
           ))}
         </ol>
+      )}
+    </div>
+  );
+}
+
+const FACTION_COLOR = { boiz: '#22d3ee', girlz: '#ff2d95' };
+const hhmm = (ms) => new Date(ms).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+function ChatBox({ socket, live, viewers, me }) {
+  const [msgs, setMsgs] = useState(null);
+  const [text, setText] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const lastIdRef = useRef(0);
+  const listRef = useRef(null);
+  const stickRef = useRef(true);
+  const isMod = me && (me.role === 'admin' || me.role === 'moderator');
+
+  const add = useCallback((list) => {
+    if (!list?.length) return;
+    setMsgs((prev) => {
+      const map = new Map((prev || []).map((m) => [m.id, m]));
+      for (const m of list) map.set(m.id, m);
+      const merged = [...map.values()].sort((a, b) => a.id - b.id).slice(-200);
+      lastIdRef.current = Math.max(lastIdRef.current, merged.length ? merged[merged.length - 1].id : 0);
+      return merged;
+    });
+  }, []);
+
+  const fetchNew = useCallback(async () => {
+    try {
+      const d = await (await fetch(`/api/cinema/chat?after=${lastIdRef.current}`, { cache: 'no-store' })).json();
+      setMsgs((prev) => prev || []);
+      add(d.messages || []);
+    } catch { /* thử lại lượt sau */ }
+  }, [add]);
+
+  // Lịch sử ban đầu
+  useEffect(() => { fetchNew(); }, [fetchNew]);
+
+  // Realtime: tin mới / tin bị xoá. Kết nối lại thì tải bù tin bị lỡ.
+  useEffect(() => {
+    if (!socket) return;
+    const onNew = (m) => add([m]);
+    const onDel = ({ id }) => setMsgs((prev) => (prev || []).filter((m) => m.id !== id));
+    const onConnect = () => fetchNew();
+    socket.on('chat:new', onNew);
+    socket.on('chat:delete', onDel);
+    socket.on('connect', onConnect);
+    return () => { socket.off('chat:new', onNew); socket.off('chat:delete', onDel); socket.off('connect', onConnect); };
+  }, [socket, add, fetchNew]);
+
+  // Mất realtime → tải tin mới mỗi 4 giây
+  useEffect(() => {
+    if (live) return;
+    const t = setInterval(() => { if (document.visibilityState === 'visible') fetchNew(); }, 4000);
+    return () => clearInterval(t);
+  }, [live, fetchNew]);
+
+  // Tự cuộn xuống khi có tin mới (trừ khi người dùng đang kéo lên đọc tin cũ)
+  useEffect(() => {
+    const el = listRef.current;
+    if (el && stickRef.current) el.scrollTop = el.scrollHeight;
+  }, [msgs]);
+  const onScroll = () => {
+    const el = listRef.current;
+    if (el) stickRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+  };
+
+  const send = async (e) => {
+    e.preventDefault();
+    const content = text.trim();
+    if (!content || busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const res = await fetch('/api/cinema/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content }) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.message || 'Không gửi được');
+      setText('');
+      stickRef.current = true;
+      add([d.message]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (id) => {
+    if (!confirm('Xoá tin nhắn này?')) return;
+    const res = await fetch(`/api/cinema/chat?id=${id}`, { method: 'DELETE' });
+    if (res.ok) setMsgs((prev) => (prev || []).filter((m) => m.id !== id));
+  };
+
+  return (
+    <div className="rounded-2xl bg-[#141414] border border-white/10 flex flex-col h-[420px]">
+      <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+        <p className="text-white font-bold flex items-center gap-2"><MessageCircle size={16} className="text-primary" /> Kênh chat</p>
+        <span className="text-[11px] flex items-center gap-1.5 text-gray-400">
+          <span className={`w-2 h-2 rounded-full ${live ? 'bg-emerald-400' : 'bg-gray-600'}`} />
+          {viewers !== null && viewers !== undefined ? <><Users size={12} /> {viewers} đang xem</> : live ? 'Trực tuyến' : 'Đang kết nối…'}
+        </span>
+      </div>
+
+      <div ref={listRef} onScroll={onScroll} className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5">
+        {msgs === null ? (
+          <div className="h-full flex items-center justify-center"><Loader2 size={18} className="animate-spin text-gray-500" /></div>
+        ) : msgs.length === 0 ? (
+          <p className="text-xs text-gray-600 text-center mt-10">Chưa có tin nhắn. Chào cả rạp một câu đi!</p>
+        ) : msgs.map((m) => {
+          const mine = me && m.user_id === me.id;
+          const staff = m.role === 'admin' || m.role === 'moderator';
+          return (
+            <div key={m.id} className={`group flex items-start gap-1.5 text-sm leading-snug ${mine ? 'bg-primary/5 -mx-1 px-1 rounded' : ''}`}>
+              <span className="text-[10px] text-gray-600 mt-0.5 shrink-0 tabular-nums">{hhmm(m.created_at_ms)}</span>
+              <p className="min-w-0 flex-1 [overflow-wrap:anywhere]">
+                {staff && <span className="text-[9px] font-black px-1 py-px rounded bg-red-600 text-white mr-1 align-middle">ADMIN</span>}
+                <span className="font-bold mr-1" style={{ color: FACTION_COLOR[m.faction] || '#ccc' }}>{m.username}:</span>
+                <span className="text-gray-200">{m.content}</span>
+              </p>
+              {isMod && (
+                <button onClick={() => remove(m.id)} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 shrink-0" aria-label="Xoá tin nhắn"><Trash2 size={12} /></button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {me ? (
+        <form onSubmit={send} className="p-2 border-t border-white/5">
+          {error && <p className="text-[11px] text-red-400 px-1 pb-1">{error}</p>}
+          <div className="flex gap-2">
+            <input value={text} onChange={(e) => setText(e.target.value.slice(0, 300))} placeholder="Nhắn gì đó với cả rạp…"
+              className="flex-1 min-w-0 bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-primary" />
+            <button disabled={busy || !text.trim()} className="px-3 rounded-xl bg-primary text-black disabled:opacity-40" aria-label="Gửi">
+              {busy ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            </button>
+          </div>
+          {text.length > 250 && <p className="text-[10px] text-gray-500 text-right pt-0.5">{text.length}/300</p>}
+        </form>
+      ) : (
+        <div className="p-3 border-t border-white/5 text-center">
+          <Link href="/login?next=/rap-chung" className="text-xs text-primary hover:underline">Đăng nhập để chat cùng mọi người</Link>
+        </div>
       )}
     </div>
   );

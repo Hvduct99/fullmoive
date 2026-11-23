@@ -178,7 +178,7 @@ export default function WatchPartyRoom({ params }) {
 
       {error && <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 flex justify-between">{error}<button onClick={() => setError('')}><X size={14} /></button></p>}
 
-      <div className="grid lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Player */}
         <div className="lg:col-span-2 space-y-3">
           <div className="relative aspect-video rounded-2xl overflow-hidden bg-black border border-white/10">
@@ -271,7 +271,7 @@ export default function WatchPartyRoom({ params }) {
               return (
                 <div key={m.id} className={`flex flex-col ${mine ? 'items-end' : 'items-start'}`}>
                   {!mine && <span className="text-[10px] font-bold mb-0.5" style={{ color: getFaction(m.faction).accent }}>{m.username}</span>}
-                  <span className={`max-w-[85%] px-3 py-1.5 rounded-2xl text-sm break-words ${mine ? 'bg-[var(--fx)] text-black rounded-br-sm' : 'bg-white/10 text-white rounded-bl-sm'}`}>{m.content}</span>
+                  <span className={`max-w-[85%] px-3 py-1.5 rounded-2xl text-sm [overflow-wrap:anywhere] ${mine ? 'bg-[var(--fx)] text-black rounded-br-sm' : 'bg-white/10 text-white rounded-bl-sm'}`}>{m.content}</span>
                 </div>
               );
             })}
