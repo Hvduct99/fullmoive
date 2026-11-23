@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { walletErrorResponse } from '@/lib/wallet';
-import { getNowPlaying, getQueue, getRequesterName, requestMovie, boostRequest, cancelRequest, getCinemaDiag, MIN_BID, MAX_BID, MAX_QUEUED_PER_USER } from '@/lib/cinema';
+import { getNowPlaying, getQueue, getRequesterName, requestMovie, boostRequest, cancelRequest, getCinemaDiag, reportDuration, MIN_BID, MAX_BID, MAX_QUEUED_PER_USER } from '@/lib/cinema';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +27,7 @@ export async function GET() {
               m3u8: now.m3u8,
               duration_ms: Number(now.duration_ms),
               started_at_ms: Number(now.started_at_ms),
+              duration_confirmed: Number(now.duration_confirmed ?? 1) === 1,
               auto: !now.queue_id,
               requested_by: requester?.username || null,
               total_bid: requester?.total_bid || 0,
@@ -48,6 +49,17 @@ export async function GET() {
 
 // action: request { movie_slug, episode_slug?, bid } | boost { queue_id, amount } | cancel { queue_id }
 export async function POST(request) {
+  // Trình duyệt báo thời lượng thật (không cần đăng nhập; server tự kiểm tra hợp lệ)
+  let peek = null;
+  try { peek = await request.clone().json(); } catch { /* bỏ qua */ }
+  if (peek?.action === 'duration') {
+    try {
+      return NextResponse.json(await reportDuration(peek));
+    } catch (e) {
+      return walletErrorResponse(NextResponse, e, 'Lỗi cập nhật thời lượng');
+    }
+  }
+
   const session = await getSession();
   if (!session) return NextResponse.json({ message: 'Đăng nhập để đề xuất phim' }, { status: 401 });
 

@@ -87,7 +87,18 @@ export default function CinemaPage() {
   useEffect(() => {
     const v = videoEl;
     if (!v) return;
-    const onMeta = () => goLive();
+    const onMeta = () => {
+      goLive();
+      // Server chưa đọc được thời lượng chính xác → báo thời lượng thật từ playlist trình duyệt đã tải
+      const n = nowRef.current;
+      if (n && !n.duration_confirmed && Number.isFinite(v.duration) && v.duration > 0) {
+        fetch('/api/cinema', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'duration', m3u8: n.m3u8, started_at_ms: n.started_at_ms, duration_ms: Math.round(v.duration * 1000) }),
+        }).then((r) => r.json()).then((d) => { if (d.accepted) load(); }).catch(() => {});
+      }
+    };
     const onSeeked = () => {
       if (Date.now() < guardSeekRef.current) return;
       // Kênh trực tiếp: không tua được → quay về đúng giờ chiếu
@@ -105,7 +116,7 @@ export default function CinemaPage() {
       v.removeEventListener('pause', onPause);
       v.removeEventListener('play', onPlay);
     };
-  }, [videoEl, goLive, livePos, showToast, offLive]);
+  }, [videoEl, goLive, livePos, showToast, offLive, load]);
 
   // Sửa trôi mỗi 5 giây khi đang xem trực tiếp
   useEffect(() => {
