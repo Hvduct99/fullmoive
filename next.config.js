@@ -15,6 +15,8 @@ const nextConfig = {
   experimental: {
     workerThreads: false,
     cpus: 1,
+    // instrumentation.js: tự gắn Socket.IO (Phòng Xem Chung) khi chạy bằng `next start`
+    instrumentationHook: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

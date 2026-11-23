@@ -20,9 +20,9 @@ Việc duy nhất cần kiểm tra trong hPanel → Websites → *site* → **c�
 | Start command | `npm start` (script này chạy `node server.js`) |
 | Node.js version | 18 trở lên |
 
-> Nếu start command đang là `next start`, đổi thành `npm start`. Chạy `next start` thì web vẫn chạy bình thường, nhưng **không có realtime**: phòng xem chung tự chuyển sang chế độ thường (video phát riêng từng máy, chat cập nhật mỗi 3 giây).
+> Preset Next.js của Hostinger chạy `next start` cũng được: `instrumentation.js` tự gắn Socket.IO vào server của Next khi khởi động, nên realtime vẫn chạy mà không cần đổi cấu hình.
 
-Kiểm tra sau khi deploy: mở `https://<tên-miền>/socket-health`. Thấy `{"ok":true,...}` là realtime đang chạy.
+Kiểm tra sau khi deploy: mở `https://<tên-miền>/api/health`. Thấy `"realtime":{"enabled":true,...}` là realtime đang chạy. Khi đã đăng nhập, trang này còn báo tình trạng database (bảng thiếu, lỗi migration).
 
 Biến môi trường (đặt trong mục Environment variables của Node.js app):
 - `SESSION_SECRET`: đã có sẵn, dùng luôn để ký token realtime.

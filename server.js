@@ -12,6 +12,9 @@ const path = require('path');
 const { pathToFileURL } = require('url');
 const next = require('next');
 
+// Báo cho instrumentation.js biết server này tự gắn Socket.IO (tránh gắn 2 lần)
+process.env.WATCH_PARTY_CUSTOM_SERVER = '1';
+
 const port = parseInt(process.env.PORT || '3000', 10);
 const dev = process.env.NODE_ENV === 'development';
 const app = next({ dev, dir: __dirname });
@@ -32,6 +35,8 @@ app.prepare().then(async () => {
   try {
     const { attachWatchParty } = await import(pathToFileURL(path.join(__dirname, 'socket-server', 'core.mjs')).href);
     party = attachWatchParty(server, { path: '/socket.io' });
+    globalThis.__watchParty = party;
+    globalThis.__watchPartyMode = 'server.js';
     console.log('[watch-party] Socket.IO gắn vào web tại /socket.io');
   } catch (e) {
     // Lỗi realtime không được làm sập web: phòng xem chung tự chuyển sang chế độ không realtime
