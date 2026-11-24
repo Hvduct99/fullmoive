@@ -220,7 +220,7 @@ const Header = () => {
         
         {/* === LEFT: Logo + Auth (desktop) === */}
         <div className="flex items-center gap-2 md:gap-4 shrink-0">
-          <Link href="/" className="text-lg md:text-2xl font-bold text-primary shrink-0" onClick={() => isMenuOpen && closeMenu()}>
+          <Link prefetch={false} href="/" className="text-lg md:text-2xl font-bold text-primary shrink-0" onClick={() => isMenuOpen && closeMenu()}>
             Genz<span className="text-white">Movie</span>
           </Link>
 
@@ -248,17 +248,17 @@ const Header = () => {
                       <p className="text-xs text-gray-400 truncate">{userSession.email || (userSession.role === 'admin' ? 'Admin' : 'Member')}</p>
                     </div>
                     {(userSession.role === 'admin' || userSession.role === 'moderator') && (
-                      <Link href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
+                      <Link prefetch={false} href="/admin" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
                         <Shield size={14} className="text-yellow-500" /> Trang Admin
                       </Link>
                     )}
-                    <Link href="/user/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
+                    <Link prefetch={false} href="/user/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
                       <LayoutDashboard size={14} className="text-blue-400" /> Dashboard
                     </Link>
-                    <Link href="/user/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
+                    <Link prefetch={false} href="/user/profile" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
                       <UserCircle size={14} className="text-green-400" /> Hồ sơ cá nhân
                     </Link>
-                    <Link href="/user/watch-history" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
+                    <Link prefetch={false} href="/user/watch-history" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-[#333] hover:text-white" onClick={() => setIsUserMenuOpen(false)}>
                       <History size={14} className="text-purple-400" /> Lịch sử xem phim
                     </Link>
                     <div className="border-t border-[#333] mt-1 pt-1">
@@ -271,10 +271,10 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link href="/login" className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors px-3 py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20">
+                <Link prefetch={false} href="/login" className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors px-3 py-1.5 rounded hover:bg-white/10 border border-transparent hover:border-white/20">
                   Đăng nhập
                 </Link>
-                <Link href="/register" className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-4 py-1.5 rounded-full hover:bg-yellow-400 transition-colors shadow-md hover:shadow-lg active:scale-95 transform">
+                <Link prefetch={false} href="/register" className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-4 py-1.5 rounded-full hover:bg-yellow-400 transition-colors shadow-md hover:shadow-lg active:scale-95 transform">
                   Đăng ký
                 </Link>
               </div>
@@ -294,7 +294,7 @@ const Header = () => {
                   </button>
                   <div className="absolute top-full left-0 w-[400px] bg-gray-900 border border-gray-700 shadow-2xl rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] p-4 grid grid-cols-2 gap-2">
                     {link.items.map((genre) => (
-                      <Link key={genre.slug} href={`/the-loai/${genre.slug}`} className="block px-2 py-1 hover:text-primary hover:bg-gray-800 rounded transition text-sm text-gray-300">
+                      <Link prefetch={false} key={genre.slug} href={`/the-loai/${genre.slug}`} className="block px-2 py-1 hover:text-primary hover:bg-gray-800 rounded transition text-sm text-gray-300">
                         {genre.name[lang]}
                       </Link>
                     ))}
@@ -303,7 +303,7 @@ const Header = () => {
               );
             }
             return (
-              <Link key={link.href} href={link.href} className="hover:text-primary transition py-2 text-sm xl:text-base">
+              <Link prefetch={false} key={link.href} href={link.href} className="hover:text-primary transition py-2 text-sm xl:text-base">
                 {link.label}
               </Link>
             );
@@ -394,17 +394,17 @@ const Header = () => {
                       </div>
                     </div>
                     {(userSession.role === 'admin' || userSession.role === 'moderator') && (
-                      <Link href="/admin" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
+                      <Link prefetch={false} href="/admin" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
                         <Shield size={16} className="text-yellow-500" /> Trang Admin
                       </Link>
                     )}
-                    <Link href="/user/dashboard" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
+                    <Link prefetch={false} href="/user/dashboard" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
                       <LayoutDashboard size={16} className="text-blue-400" /> Dashboard
                     </Link>
-                    <Link href="/user/profile" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
+                    <Link prefetch={false} href="/user/profile" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
                       <UserCircle size={16} className="text-green-400" /> Hồ sơ cá nhân
                     </Link>
-                    <Link href="/user/watch-history" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
+                    <Link prefetch={false} href="/user/watch-history" className="flex items-center gap-3 px-2 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg transition" onClick={closeMenu}>
                       <History size={16} className="text-purple-400" /> Lịch sử xem phim
                     </Link>
                     <div className="border-t border-gray-800 mt-1 pt-1">
@@ -417,10 +417,10 @@ const Header = () => {
                   <div className="space-y-3">
                     <p className="text-sm text-gray-400 text-center">Đăng nhập để trải nghiệm tốt hơn</p>
                     <div className="flex gap-2">
-                      <Link href="/login" className="flex-1 text-center py-2.5 text-sm font-medium rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition border border-gray-700" onClick={closeMenu}>
+                      <Link prefetch={false} href="/login" className="flex-1 text-center py-2.5 text-sm font-medium rounded-lg bg-gray-800 text-white hover:bg-gray-700 transition border border-gray-700" onClick={closeMenu}>
                         Đăng nhập
                       </Link>
-                      <Link href="/register" className="flex-1 text-center py-2.5 text-sm font-bold rounded-lg bg-yellow-500 text-black hover:bg-yellow-400 transition" onClick={closeMenu}>
+                      <Link prefetch={false} href="/register" className="flex-1 text-center py-2.5 text-sm font-bold rounded-lg bg-yellow-500 text-black hover:bg-yellow-400 transition" onClick={closeMenu}>
                         Đăng ký
                       </Link>
                     </div>
@@ -444,7 +444,7 @@ const Header = () => {
                         {isGenreOpen && (
                           <div className="grid grid-cols-2 gap-1 px-3 pb-3">
                             {link.items.map((genre) => (
-                              <Link 
+                              <Link prefetch={false} 
                                 key={genre.slug}
                                 href={`/the-loai/${genre.slug}`}
                                 className="text-xs text-gray-400 hover:text-primary hover:bg-gray-800/50 px-2 py-2 rounded-md transition"
@@ -459,7 +459,7 @@ const Header = () => {
                     );
                   }
                   return (
-                    <Link 
+                    <Link prefetch={false} 
                       key={link.href}
                       href={link.href}
                       className="flex items-center px-4 py-3 text-sm font-medium text-gray-200 hover:text-white hover:bg-gray-800/50 transition"

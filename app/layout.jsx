@@ -2,6 +2,7 @@ import './globals.css';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import MobileUserBar from '../components/MobileUserBar';
+import CdnChallengeGuard from '../components/CdnChallengeGuard';
 import ZaloFloatingButton from '../components/ZaloFloatingButton';
 import { LanguageProvider } from '../components/LanguageContext';
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
           </main>
           <Footer />
           <MobileUserBar />
+          <CdnChallengeGuard />
           <ZaloFloatingButton />
         </LanguageProvider>
       </body>

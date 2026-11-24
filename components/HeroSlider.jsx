@@ -64,7 +64,7 @@ export default function HeroSlider({ movies }) {
                     )}
                     
                     <div className="pt-4 flex flex-wrap gap-4">
-                        <Link 
+                        <Link prefetch={false} 
                         href={`/phim/${movie.slug}`} 
                         className="inline-flex items-center gap-2 px-8 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-lg hover:shadow-red-600/30"
                         >
@@ -74,7 +74,7 @@ export default function HeroSlider({ movies }) {
                             {t.watch_now}
                         </Link>
                         
-                        <Link 
+                        <Link prefetch={false} 
                         href={`/phim/${movie.slug}`} 
                         className="inline-flex items-center gap-2 px-8 py-3 bg-gray-600/80 hover:bg-gray-500/80 text-white font-bold rounded-full transition-all transform hover:scale-105 backdrop-blur-sm"
                         >

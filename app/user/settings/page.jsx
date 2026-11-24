@@ -157,7 +157,7 @@ export default function SettingsPage() {
         )}
       </Panel>
 
-      <Link href="/user/profile" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white">
+      <Link prefetch={false} href="/user/profile" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white">
         <KeyRound size={16} /> Đổi thông tin cá nhân & mật khẩu →
       </Link>
     </div>

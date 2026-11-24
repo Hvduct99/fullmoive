@@ -75,7 +75,7 @@ function LibraryInner() {
               {tab === 'history' ? 'Chưa xem phim nào.' : tab === 'favorite' ? 'Chưa có phim yêu thích.' : 'Chưa lưu phim nào.'}
             </p>
             <p className="text-xs text-gray-600 mt-1">Bấm ♥ hoặc 🔖 ở trang chi tiết phim để thêm vào tủ.</p>
-            <Link href="/" className="inline-block mt-4 text-sm text-[var(--fx)] hover:underline">Khám phá phim →</Link>
+            <Link prefetch={false} href="/" className="inline-block mt-4 text-sm text-[var(--fx)] hover:underline">Khám phá phim →</Link>
           </div>
         ) : tab === 'history' ? (
           <div className={grid}>

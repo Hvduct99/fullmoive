@@ -120,7 +120,7 @@ export default function AdminNotifyBell({ className = '' }) {
             {unread > 0 && <button onClick={markAll} className="text-[11px] text-yellow-400 hover:underline flex items-center gap-1"><Check size={12} /> Đọc tất cả</button>}
           </div>
           {data?.pendingDeposits > 0 && (
-            <Link href="/admin/billing" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-2.5 bg-yellow-500/10 text-yellow-300 text-xs font-semibold hover:bg-yellow-500/20">
+            <Link prefetch={false} href="/admin/billing" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-2.5 bg-yellow-500/10 text-yellow-300 text-xs font-semibold hover:bg-yellow-500/20">
               <Wallet size={14} /> {data.pendingDeposits} đơn nạp đang chờ duyệt →
             </Link>
           )}
@@ -130,7 +130,7 @@ export default function AdminNotifyBell({ className = '' }) {
             ) : data.items.length === 0 ? (
               <p className="text-xs text-gray-500 text-center py-6">Chưa có thông báo.</p>
             ) : data.items.map((n) => (
-              <Link key={n.id} href={n.link || '/admin/billing'} onClick={() => { if (!n.is_read) markOne(n.id); setOpen(false); }}
+              <Link prefetch={false} key={n.id} href={n.link || '/admin/billing'} onClick={() => { if (!n.is_read) markOne(n.id); setOpen(false); }}
                 className={`block px-4 py-3 border-b border-[#262626] hover:bg-white/5 ${n.is_read ? 'opacity-60' : ''}`}>
                 <div className="flex items-start gap-2">
                   <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${n.is_read ? 'bg-transparent' : n.type === 'deposit_confirmed' ? 'bg-orange-400' : 'bg-yellow-400'}`} />

@@ -33,7 +33,7 @@ export default async function WatchPage({ params }) {
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-white">
         <h1 className="text-2xl font-bold mb-4">Phim không tìm thấy</h1>
         <p className="text-gray-400 mb-6">Có thể phim này đang bị lỗi hoặc đã bị xóa.</p>
-        <Link href="/" className="px-6 py-2 bg-primary text-black font-bold rounded hover:bg-red-700 transition">
+        <Link prefetch={false} href="/" className="px-6 py-2 bg-primary text-black font-bold rounded hover:bg-red-700 transition">
           Về Trang chủ
         </Link>
       </div>
@@ -58,7 +58,7 @@ export default async function WatchPage({ params }) {
     return (
       <div className="container mx-auto px-4 py-12 text-center text-white">
         <h1 className="text-2xl font-bold mb-4">Không tìm thấy tập phim</h1>
-        <Link href={`/phim/${slug}`} className="text-primary hover:underline">
+        <Link prefetch={false} href={`/phim/${slug}`} className="text-primary hover:underline">
           Quay lại trang thông tin phim
         </Link>
       </div>

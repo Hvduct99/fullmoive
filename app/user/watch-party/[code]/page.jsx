@@ -152,7 +152,7 @@ export default function WatchPartyRoom({ params }) {
     return (
       <div className="text-center py-16 space-y-3">
         <p className="text-red-400">{error}</p>
-        <Link href="/user/watch-party" className="text-[var(--fx)] hover:underline text-sm">← Về danh sách phòng</Link>
+        <Link prefetch={false} href="/user/watch-party" className="text-[var(--fx)] hover:underline text-sm">← Về danh sách phòng</Link>
       </div>
     );
   }
@@ -165,7 +165,7 @@ export default function WatchPartyRoom({ params }) {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <Link href="/user/watch-party" className="p-2 rounded-lg bg-white/5 text-gray-300 hover:text-white" aria-label="Quay lại"><ArrowLeft size={18} /></Link>
+        <Link prefetch={false} href="/user/watch-party" className="p-2 rounded-lg bg-white/5 text-gray-300 hover:text-white" aria-label="Quay lại"><ArrowLeft size={18} /></Link>
         <div className="flex-1 min-w-0">
           <h1 className="text-lg md:text-xl font-black text-white truncate">{party.title}</h1>
           <p className="text-xs text-gray-400 truncate">{party.movie_name} · Chủ phòng: {party.host_name}</p>

@@ -42,7 +42,7 @@ export default async function AdminLayout({ children }) {
         
         <nav className="flex-1 px-4 space-y-2">
           {menuItems.map((item) => (
-            <Link
+            <Link prefetch={false}
               key={item.href}
               href={item.href}
               className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-[#333] hover:text-white rounded transition-colors"

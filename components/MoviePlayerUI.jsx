@@ -118,7 +118,7 @@ export default function MoviePlayerUI({ movie, currentEpisode, episodeList, curr
                     const epUrl = `/phim/${movie.slug}/tap-${ep.slug}`;
                     
                     return (
-                        <Link 
+                        <Link prefetch={false} 
                             key={idx} 
                             href={epUrl}
                             className={`

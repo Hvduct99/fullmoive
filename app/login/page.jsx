@@ -94,7 +94,7 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-gray-400">
           Chưa có tài khoản?{' '}
-          <Link href="/register" className="text-yellow-500 hover:underline">
+          <Link prefetch={false} href="/register" className="text-yellow-500 hover:underline">
             Đăng ký ngay
           </Link>
         </div>

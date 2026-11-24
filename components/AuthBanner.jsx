@@ -46,13 +46,13 @@ const AuthBanner = () => {
           </div>
           
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <Link 
+            <Link prefetch={false} 
               href="/login"
               className="text-xs md:text-sm font-medium text-gray-300 hover:text-white transition-colors px-4 py-2 rounded-lg hover:bg-white/10 border border-gray-600 hover:border-white/30"
             >
               Đăng nhập
             </Link>
-            <Link
+            <Link prefetch={false}
               href="/register"
               className="text-xs md:text-sm font-bold bg-yellow-500 text-black px-5 py-2 rounded-full hover:bg-yellow-400 transition-all shadow-md hover:shadow-yellow-500/30 active:scale-95 transform"
             >
@@ -105,7 +105,7 @@ export const AuthBottomCTA = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              <Link
+              <Link prefetch={false}
                 href="/register"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-8 py-3 rounded-full transition-all shadow-lg hover:shadow-yellow-500/30 active:scale-95 transform text-sm md:text-base"
               >
@@ -114,7 +114,7 @@ export const AuthBottomCTA = () => {
                 </svg>
                 Đăng ký miễn phí
               </Link>
-              <Link
+              <Link prefetch={false}
                 href="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-gray-300 hover:text-white font-medium px-6 py-3 rounded-full border border-gray-600 hover:border-white/40 hover:bg-white/5 transition-all text-sm md:text-base"
               >

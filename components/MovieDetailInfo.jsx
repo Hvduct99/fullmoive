@@ -28,7 +28,7 @@ export default function MovieDetailInfo({ movie }) {
             />
           </div>
           {movie.episodes && movie.episodes.length > 0 && movie.episodes[0].server_data && movie.episodes[0].server_data.length > 0 ? (
-            <Link
+            <Link prefetch={false}
               href={`/phim/${movie.slug}/tap-${movie.episodes[0].server_data[0].slug}`}
               className="block w-full text-center bg-secondary hover:bg-red-700 text-white font-bold py-3 mt-4 rounded transition"
             >
@@ -90,7 +90,7 @@ export default function MovieDetailInfo({ movie }) {
                 <h4 className="font-bold text-primary mb-3">{t.server}: {server.server_name}</h4>
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
                   {server.server_data.map((ep, i) => (
-                    <Link
+                    <Link prefetch={false}
                       key={i}
                       href={`/phim/${movie.slug}/tap-${ep.slug}`}
                       className="bg-gray-800 hover:bg-primary hover:text-black text-center py-2 rounded transition text-sm"

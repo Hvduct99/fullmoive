@@ -167,7 +167,7 @@ export default function WatchPartyPage() {
           <ul className="space-y-2">
             {parties.map((p) => (
               <li key={p.id}>
-                <Link href={`/user/watch-party/${p.code}`} className={`flex items-center gap-3 rounded-xl border p-2.5 transition ${p.status === 'open' ? 'border-white/10 hover:border-[var(--fx)]' : 'border-white/5 opacity-50'}`}>
+                <Link prefetch={false} href={`/user/watch-party/${p.code}`} className={`flex items-center gap-3 rounded-xl border p-2.5 transition ${p.status === 'open' ? 'border-white/10 hover:border-[var(--fx)]' : 'border-white/5 opacity-50'}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {p.movie_thumb ? <img src={p.movie_thumb} alt="" className="w-10 h-14 object-cover rounded" /> : <div className="w-10 h-14 rounded bg-gray-800" />}
                   <div className="flex-1 min-w-0">

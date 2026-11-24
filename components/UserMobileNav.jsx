@@ -13,7 +13,7 @@ export default function UserMobileNav() {
         {USER_NAV.map(({ href, icon: Icon, short }) => {
           const active = isNavActive(pathname, href);
           return (
-            <Link key={href} href={href}
+            <Link prefetch={false} key={href} href={href}
               className={`flex flex-col items-center gap-0.5 py-2.5 text-[10px] font-semibold transition-colors ${active ? 'text-[var(--fx)]' : 'text-gray-500'}`}>
               <Icon size={20} />
               {short}

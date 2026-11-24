@@ -38,7 +38,7 @@ export default async function MovieDetail({ params }) {
         <h1 className="text-2xl font-bold mb-4">Phim không tìm thấy</h1>
         <p className="text-gray-400 mb-6">Có thể phim này đang bị lỗi hoặc đã bị xóa.</p>
         <div className="flex gap-4">
-             <Link href="/" className="px-6 py-2 bg-primary text-black font-bold rounded hover:bg-red-700 transition">
+             <Link prefetch={false} href="/" className="px-6 py-2 bg-primary text-black font-bold rounded hover:bg-red-700 transition">
               Về Trang chủ
             </Link>
              <button onClick={() => window.location.reload()} className="px-6 py-2 bg-gray-700 text-white font-bold rounded hover:bg-gray-600 transition">

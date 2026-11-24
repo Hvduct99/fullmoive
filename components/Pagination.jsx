@@ -22,7 +22,7 @@ const Pagination = ({ currentPage, basePath, totalItems, itemsPerPage = 24, tota
   return (
     <div className="mt-12 flex justify-center items-center gap-2 flex-wrap">
       {page > 1 && (
-        <Link
+        <Link prefetch={false}
           href={`${basePath}?page=${page - 1}`}
           className="px-3 py-2 bg-gray-800 hover:bg-primary hover:text-black rounded transition text-sm font-medium"
         >
@@ -31,7 +31,7 @@ const Pagination = ({ currentPage, basePath, totalItems, itemsPerPage = 24, tota
       )}
 
       {pageNumbers.map((num) => (
-        <Link
+        <Link prefetch={false}
           key={num}
           href={`${basePath}?page=${num}`}
           className={`px-3 py-2 rounded transition text-sm font-bold ${
@@ -45,7 +45,7 @@ const Pagination = ({ currentPage, basePath, totalItems, itemsPerPage = 24, tota
       ))}
 
       {hasNext && (
-        <Link
+        <Link prefetch={false}
           href={`${basePath}?page=${page + 1}`}
           className="px-3 py-2 bg-gray-800 hover:bg-primary hover:text-black rounded transition text-sm font-medium"
         >

@@ -9,7 +9,7 @@ const MovieCard = ({ movie }) => {
   const subName = lang === 'en' ? movie.name : (movie.origin_name || '');
 
   return (
-    <Link href={`/phim/${movie.slug}`} className="group block relative overflow-hidden rounded-lg bg-surface hover:shadow-xl transition-all duration-300">
+    <Link prefetch={false} href={`/phim/${movie.slug}`} className="group block relative overflow-hidden rounded-lg bg-surface hover:shadow-xl transition-all duration-300">
       <div className="aspect-[2/3] relative">
         <Image
           src={movie.poster_url || movie.thumb_url}

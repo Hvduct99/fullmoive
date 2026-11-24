@@ -30,7 +30,7 @@ const MovieMarquee = ({ movies, title }) => {
           {duplicated.map((movie, index) => {
             const displayName = lang === 'en' ? (movie.origin_name || movie.name) : movie.name;
             return (
-              <Link
+              <Link prefetch={false}
                 key={`${movie.slug}-${index}`}
                 href={`/phim/${movie.slug}`}
                 className="group flex-shrink-0 w-[130px] sm:w-[150px] md:w-[170px] relative rounded-xl overflow-hidden bg-surface hover:ring-2 hover:ring-red-500 transition-all duration-300 shadow-lg hover:shadow-red-500/20"

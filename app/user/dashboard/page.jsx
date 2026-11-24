@@ -53,7 +53,7 @@ export default function UserDashboard() {
             <div className="flex items-center gap-1">
               <button onClick={() => scroll(-1)} className="hidden md:flex w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 items-center justify-center text-gray-300" aria-label="Trước"><ChevronLeft size={16} /></button>
               <button onClick={() => scroll(1)} className="hidden md:flex w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 items-center justify-center text-gray-300" aria-label="Sau"><ChevronRight size={16} /></button>
-              <Link href="/user/library?tab=history" className="text-xs text-[var(--fx)] hover:underline ml-2">Tất cả</Link>
+              <Link prefetch={false} href="/user/library?tab=history" className="text-xs text-[var(--fx)] hover:underline ml-2">Tất cả</Link>
             </div>
           } />
         {continueList === null ? (
@@ -61,7 +61,7 @@ export default function UserDashboard() {
             {Array.from({ length: 5 }).map((_, i) => <div key={i} className="shrink-0 w-[150px] md:w-[170px] aspect-[2/3] rounded-xl bg-white/5 animate-pulse" />)}
           </div>
         ) : continueList.length === 0 ? (
-          <p className="text-sm text-gray-500 py-6 text-center">Chưa có phim nào xem dở. <Link href="/" className="text-[var(--fx)] hover:underline">Kiếm phim cày thôi →</Link></p>
+          <p className="text-sm text-gray-500 py-6 text-center">Chưa có phim nào xem dở. <Link prefetch={false} href="/" className="text-[var(--fx)] hover:underline">Kiếm phim cày thôi →</Link></p>
         ) : (
           <div ref={rowRef} className="gz-scroll-x flex gap-3 overflow-x-auto snap-x snap-mandatory -mx-1 px-1 pb-1">
             {continueList.map((item) => <ContinueCard key={item.id} item={item} onRemove={removeContinue} />)}
@@ -76,17 +76,17 @@ export default function UserDashboard() {
           <p className="text-white font-bold mt-2 text-sm">{faction.pass}</p>
           <p className="text-xs text-gray-400 mt-0.5">{energy.active ? `Còn ${energy.label} · ${faction.renewCta}` : faction.cta}</p>
         </button>
-        <Link href="/user/library?tab=favorite" className="rounded-2xl border border-white/[0.07] bg-[#121217] p-4 hover:border-white/20 transition">
+        <Link prefetch={false} href="/user/library?tab=favorite" className="rounded-2xl border border-white/[0.07] bg-[#121217] p-4 hover:border-white/20 transition">
           <Heart size={20} className="text-pink-400" />
           <p className="text-white font-bold mt-2 text-sm">{favCount} phim yêu thích</p>
           <p className="text-xs text-gray-400 mt-0.5">Tủ phim cá nhân</p>
         </Link>
-        <Link href="/user/library?tab=saved" className="rounded-2xl border border-white/[0.07] bg-[#121217] p-4 hover:border-white/20 transition">
+        <Link prefetch={false} href="/user/library?tab=saved" className="rounded-2xl border border-white/[0.07] bg-[#121217] p-4 hover:border-white/20 transition">
           <Bookmark size={20} className="text-amber-400" />
           <p className="text-white font-bold mt-2 text-sm">{savedCount} phim đã lưu</p>
           <p className="text-xs text-gray-400 mt-0.5">Để dành xem sau</p>
         </Link>
-        <Link href="/user/watch-party" className="rounded-2xl border border-white/[0.07] bg-[#121217] p-4 hover:border-white/20 transition">
+        <Link prefetch={false} href="/user/watch-party" className="rounded-2xl border border-white/[0.07] bg-[#121217] p-4 hover:border-white/20 transition">
           <Users size={20} className="text-emerald-400" />
           <p className="text-white font-bold mt-2 text-sm">{openParties.length} phòng đang mở</p>
           <p className="text-xs text-gray-400 mt-0.5">Rủ hội bạn xem chung</p>
@@ -96,7 +96,7 @@ export default function UserDashboard() {
       {/* Giao dịch gần đây */}
       <Panel>
         <SectionTitle icon={<Receipt size={18} />} title="Biến động ví gần đây"
-          action={<Link href="/user/wallet" className="text-xs text-[var(--fx)] hover:underline">Xem ví</Link>} />
+          action={<Link prefetch={false} href="/user/wallet" className="text-xs text-[var(--fx)] hover:underline">Xem ví</Link>} />
         {txs.length === 0 ? (
           <p className="text-sm text-gray-500 text-center py-4">Chưa có giao dịch nào.</p>
         ) : (

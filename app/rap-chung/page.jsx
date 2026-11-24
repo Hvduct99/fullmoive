@@ -207,7 +207,7 @@ export default function CinemaPage() {
               <div className="flex flex-wrap items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-500">Đang chiếu</p>
-                  <Link href={`/phim/${now.movie_slug}`} className="text-lg font-bold text-white hover:text-primary line-clamp-1">{now.movie_name}</Link>
+                  <Link prefetch={false} href={`/phim/${now.movie_slug}`} className="text-lg font-bold text-white hover:text-primary line-clamp-1">{now.movie_name}</Link>
                   <p className="text-xs text-gray-400 mt-0.5">
                     {now.episode_name && now.episode_name !== 'Full' ? `Tập ${now.episode_name} · ` : ''}
                     {now.auto
@@ -337,7 +337,7 @@ function RequestBox({ data, balance, onDone }) {
       <div className="rounded-2xl bg-[#141414] border border-white/10 p-4 text-center">
         <p className="text-white font-bold">Muốn chiếu phim bạn thích?</p>
         <p className="text-xs text-gray-400 mt-1">Đăng nhập để đề xuất phim và ưu tiên lên đầu hàng chờ.</p>
-        <Link href="/login?next=/rap-chung" className="inline-block mt-3 px-5 py-2.5 rounded-lg bg-primary text-black font-bold">Đăng nhập</Link>
+        <Link prefetch={false} href="/login?next=/rap-chung" className="inline-block mt-3 px-5 py-2.5 rounded-lg bg-primary text-black font-bold">Đăng nhập</Link>
       </div>
     );
   }
@@ -346,7 +346,7 @@ function RequestBox({ data, balance, onDone }) {
     <div className="rounded-2xl bg-[#141414] border border-white/10 p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-white font-bold flex items-center gap-2"><Zap size={16} className="text-primary" /> Đề xuất phim</p>
-        {balance !== null && <Link href="/user/wallet" className="text-xs text-gray-400 flex items-center gap-1 hover:text-white"><Wallet size={12} /> {vnd(balance)}</Link>}
+        {balance !== null && <Link prefetch={false} href="/user/wallet" className="text-xs text-gray-400 flex items-center gap-1 hover:text-white"><Wallet size={12} /> {vnd(balance)}</Link>}
       </div>
 
       {movie ? (
@@ -639,7 +639,7 @@ function ChatBox({ socket, live, viewers, me }) {
         </form>
       ) : (
         <div className="p-3 border-t border-white/5 text-center">
-          <Link href="/login?next=/rap-chung" className="text-xs text-primary hover:underline">Đăng nhập để chat cùng mọi người</Link>
+          <Link prefetch={false} href="/login?next=/rap-chung" className="text-xs text-primary hover:underline">Đăng nhập để chat cùng mọi người</Link>
         </div>
       )}
     </div>

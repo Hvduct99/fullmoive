@@ -66,19 +66,19 @@ export default function UserPageSidebar() {
           {USER_NAV.map(({ href, icon: Icon, label }) => {
             const active = isNavActive(pathname, href);
             return (
-              <Link key={href} href={href} className={linkCls(active)}>
+              <Link prefetch={false} key={href} href={href} className={linkCls(active)}>
                 <span className="flex items-center gap-2.5"><Icon size={16} /> {label}</span>
                 <ChevronRight size={13} className={active ? '' : 'text-gray-600'} />
               </Link>
             );
           })}
           <div className="h-px bg-white/5 my-1" />
-          <Link href="/user/profile" className={linkCls(isNavActive(pathname, '/user/profile'))}>
+          <Link prefetch={false} href="/user/profile" className={linkCls(isNavActive(pathname, '/user/profile'))}>
             <span className="flex items-center gap-2.5"><UserCircle size={16} /> Hồ sơ & mật khẩu</span>
             <ChevronRight size={13} className="text-gray-600" />
           </Link>
           {isAdmin && (
-            <Link href="/admin" className={linkCls(false)}>
+            <Link prefetch={false} href="/admin" className={linkCls(false)}>
               <span className="flex items-center gap-2.5"><Shield size={16} className="text-red-400" /> Trang Admin</span>
               <ChevronRight size={13} className="text-gray-600" />
             </Link>
@@ -86,7 +86,7 @@ export default function UserPageSidebar() {
         </nav>
 
         <div className="rounded-2xl border border-white/[0.07] bg-[#121217] overflow-hidden">
-          <Link href="/" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-400 hover:bg-white/5 hover:text-white">
+          <Link prefetch={false} href="/" className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-400 hover:bg-white/5 hover:text-white">
             <Home size={16} /> Về trang chủ
           </Link>
           <button onClick={logout} className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 border-t border-white/5">

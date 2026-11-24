@@ -11,7 +11,7 @@ const Section = ({ title, movies, link }) => {
           {title}
         </h2>
         {link && (
-          <Link href={link} className="text-xs md:text-sm text-gray-400 hover:text-primary">
+          <Link prefetch={false} href={link} className="text-xs md:text-sm text-gray-400 hover:text-primary">
             Xem tất cả &rarr;
           </Link>
         )}

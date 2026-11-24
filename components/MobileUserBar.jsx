@@ -9,12 +9,13 @@ export default function MobileUserBar() {
   const [loggedIn, setLoggedIn] = useState(false);
   const pathname = usePathname();
 
+  // Chỉ kiểm tra phiên 1 lần (không gọi lại mỗi lần chuyển trang → bớt request, tránh bị CDN nghi là bot)
   useEffect(() => {
     fetch('/api/auth/session', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => setLoggedIn(!!d.user))
       .catch(() => {});
-  }, [pathname]);
+  }, []);
 
   if (!loggedIn) return null;
   // /user/* đã có thanh điều hướng riêng (UserMobileNav) → tránh 2 thanh chồng nhau
@@ -33,7 +34,7 @@ export default function MobileUserBar() {
         {items.map(item => {
           const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href);
           return (
-            <Link
+            <Link prefetch={false}
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center gap-0.5 py-2.5 px-3 text-[10px] font-medium transition-colors ${

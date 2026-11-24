@@ -163,7 +163,7 @@ export function ContinueCard({ item, onRemove, className = 'shrink-0 w-[150px] m
   const pct = historyProgress(item);
   return (
     <div className={`group relative ${className}`}>
-      <Link href={historyHref(item)} className="block rounded-xl overflow-hidden bg-[#16161c] border border-white/5 hover:border-[rgb(var(--fx-rgb)/0.6)] transition">
+      <Link prefetch={false} href={historyHref(item)} className="block rounded-xl overflow-hidden bg-[#16161c] border border-white/5 hover:border-[rgb(var(--fx-rgb)/0.6)] transition">
         <div className="relative aspect-[2/3] bg-gray-900">
           {item.movie_thumb ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -198,7 +198,7 @@ export function ContinueCard({ item, onRemove, className = 'shrink-0 w-[150px] m
 export function PosterCard({ item, href, badge, onRemove }) {
   return (
     <div className="group relative">
-      <Link href={href || `/phim/${item.movie_slug}`} className="block rounded-xl overflow-hidden bg-[#16161c] border border-white/5 hover:border-[rgb(var(--fx-rgb)/0.6)] transition">
+      <Link prefetch={false} href={href || `/phim/${item.movie_slug}`} className="block rounded-xl overflow-hidden bg-[#16161c] border border-white/5 hover:border-[rgb(var(--fx-rgb)/0.6)] transition">
         <div className="relative aspect-[2/3] bg-gray-900">
           {item.movie_thumb ? (
             // eslint-disable-next-line @next/next/no-img-element

@@ -80,7 +80,7 @@ export default function RegisterPage() {
 
         <div className="mt-6 text-center text-sm text-gray-400">
           Đã có tài khoản?{' '}
-          <Link href="/login" className="text-yellow-500 hover:underline">
+          <Link prefetch={false} href="/login" className="text-yellow-500 hover:underline">
             Đăng nhập ngay
           </Link>
         </div>
